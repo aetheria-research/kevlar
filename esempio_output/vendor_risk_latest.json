@@ -1,0 +1,1991 @@
+{
+  "generato": "2026-10-01",
+  "catalog_version": "2026.09.30",
+  "totale_kev": 1730,
+  "tot_ransomware": 361,
+  "mesi_trend": 12,
+  "min_kev_ratio": 10,
+  "vendor": [
+    {
+      "vendor": "Cisco",
+      "kev": 100,
+      "ransomware": 7,
+      "ratio": 0.07,
+      "recenti": 19
+    },
+    {
+      "vendor": "Apple",
+      "kev": 95,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 11
+    },
+    {
+      "vendor": "Citrix",
+      "kev": 26,
+      "ransomware": 7,
+      "ratio": 0.269,
+      "recenti": 5
+    },
+    {
+      "vendor": "MikroTik",
+      "kev": 5,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 3
+    },
+    {
+      "vendor": "Microsoft",
+      "kev": 389,
+      "ransomware": 117,
+      "ratio": 0.301,
+      "recenti": 49
+    },
+    {
+      "vendor": "WordPress",
+      "kev": 6,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 3
+    },
+    {
+      "vendor": "WSO2",
+      "kev": 2,
+      "ransomware": 1,
+      "ratio": 0.5,
+      "recenti": 1
+    },
+    {
+      "vendor": "Adobe",
+      "kev": 82,
+      "ransomware": 11,
+      "ratio": 0.134,
+      "recenti": 8
+    },
+    {
+      "vendor": "Arista",
+      "kev": 3,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 3
+    },
+    {
+      "vendor": "F5",
+      "kev": 8,
+      "ransomware": 4,
+      "ratio": 0.5,
+      "recenti": 2
+    },
+    {
+      "vendor": "Check Point",
+      "kev": 5,
+      "ransomware": 2,
+      "ratio": 0.4,
+      "recenti": 4
+    },
+    {
+      "vendor": "Zyxel",
+      "kev": 13,
+      "ransomware": 2,
+      "ratio": 0.154,
+      "recenti": 1
+    },
+    {
+      "vendor": "Linux",
+      "kev": 31,
+      "ransomware": 2,
+      "ratio": 0.065,
+      "recenti": 9
+    },
+    {
+      "vendor": "Google",
+      "kev": 75,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 10
+    },
+    {
+      "vendor": "Acronis",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "ConnectWise",
+      "kev": 4,
+      "ransomware": 2,
+      "ratio": 0.5,
+      "recenti": 2
+    },
+    {
+      "vendor": "JFrog",
+      "kev": 4,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 4
+    },
+    {
+      "vendor": "GitLab",
+      "kev": 5,
+      "ransomware": 1,
+      "ratio": 0.2,
+      "recenti": 3
+    },
+    {
+      "vendor": "Fortinet",
+      "kev": 30,
+      "ransomware": 14,
+      "ratio": 0.467,
+      "recenti": 10
+    },
+    {
+      "vendor": "N-able",
+      "kev": 5,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 3
+    },
+    {
+      "vendor": "BerriAI",
+      "kev": 3,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 3
+    },
+    {
+      "vendor": "Kludex",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Kestra",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Sangoma",
+      "kev": 4,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 3
+    },
+    {
+      "vendor": "SonicWall",
+      "kev": 19,
+      "ransomware": 13,
+      "ratio": 0.684,
+      "recenti": 5
+    },
+    {
+      "vendor": "PaperCut",
+      "kev": 5,
+      "ransomware": 2,
+      "ratio": 0.4,
+      "recenti": 3
+    },
+    {
+      "vendor": "ownCloud",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Ajax.NET Professional",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Red Hat",
+      "kev": 9,
+      "ransomware": 4,
+      "ratio": 0.444,
+      "recenti": 2
+    },
+    {
+      "vendor": "Gitea",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Oracle",
+      "kev": 46,
+      "ransomware": 13,
+      "ratio": 0.283,
+      "recenti": 7
+    },
+    {
+      "vendor": "Synacor",
+      "kev": 19,
+      "ransomware": 6,
+      "ratio": 0.316,
+      "recenti": 6
+    },
+    {
+      "vendor": "TrueConf",
+      "kev": 3,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 3
+    },
+    {
+      "vendor": "MLflow",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Broadcom",
+      "kev": 5,
+      "ransomware": 1,
+      "ratio": 0.2,
+      "recenti": 4
+    },
+    {
+      "vendor": "Ray-Project",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Metabase",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Progress",
+      "kev": 9,
+      "ransomware": 4,
+      "ratio": 0.444,
+      "recenti": 1
+    },
+    {
+      "vendor": "JetBrains",
+      "kev": 4,
+      "ransomware": 4,
+      "ratio": 1.0,
+      "recenti": 2
+    },
+    {
+      "vendor": "Apache",
+      "kev": 40,
+      "ransomware": 8,
+      "ratio": 0.2,
+      "recenti": 2
+    },
+    {
+      "vendor": "IBM",
+      "kev": 8,
+      "ransomware": 2,
+      "ratio": 0.25,
+      "recenti": 1
+    },
+    {
+      "vendor": "Langflow",
+      "kev": 5,
+      "ransomware": 1,
+      "ratio": 0.2,
+      "recenti": 4
+    },
+    {
+      "vendor": "DD-WRT",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "KNX Association",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Balbooa",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "iCagenda",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "JoomShaper",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Joomlack",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "SimpleHelp ",
+      "kev": 4,
+      "ransomware": 3,
+      "ratio": 0.75,
+      "recenti": 3
+    },
+    {
+      "vendor": "PTC",
+      "kev": 1,
+      "ransomware": 1,
+      "ratio": 1.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Lantronix",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Ubiquiti",
+      "kev": 4,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 3
+    },
+    {
+      "vendor": "Splunk",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Widget Factory",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "LiteSpeed",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 2
+    },
+    {
+      "vendor": "Ivanti",
+      "kev": 35,
+      "ransomware": 12,
+      "ratio": 0.343,
+      "recenti": 5
+    },
+    {
+      "vendor": "SolarWinds",
+      "kev": 11,
+      "ransomware": 2,
+      "ratio": 0.182,
+      "recenti": 4
+    },
+    {
+      "vendor": "Mirasvit",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Android",
+      "kev": 17,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 3
+    },
+    {
+      "vendor": "Palo Alto Networks",
+      "kev": 15,
+      "ransomware": 6,
+      "ratio": 0.4,
+      "recenti": 2
+    },
+    {
+      "vendor": "Nx",
+      "kev": 1,
+      "ransomware": 1,
+      "ratio": 1.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "TanStack",
+      "kev": 1,
+      "ransomware": 1,
+      "ratio": 1.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Daemon",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Drupal",
+      "kev": 5,
+      "ransomware": 2,
+      "ratio": 0.4,
+      "recenti": 1
+    },
+    {
+      "vendor": "Trend Micro",
+      "kev": 12,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "WebPros",
+      "kev": 1,
+      "ransomware": 1,
+      "ratio": 1.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "D-Link",
+      "kev": 26,
+      "ransomware": 2,
+      "ratio": 0.077,
+      "recenti": 2
+    },
+    {
+      "vendor": "Samsung",
+      "kev": 15,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 2
+    },
+    {
+      "vendor": "Marimo",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Kentico",
+      "kev": 4,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 3
+    },
+    {
+      "vendor": "Quest",
+      "kev": 2,
+      "ransomware": 1,
+      "ratio": 0.5,
+      "recenti": 1
+    },
+    {
+      "vendor": "Aquasecurity",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Craft CMS",
+      "kev": 4,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Laravel",
+      "kev": 3,
+      "ransomware": 1,
+      "ratio": 0.333,
+      "recenti": 1
+    },
+    {
+      "vendor": "Wing FTP Server",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "n8n",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Omnissa",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Hikvision",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Rockwell",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Qualcomm",
+      "kev": 12,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Soliton Systems K.K",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Roundcube",
+      "kev": 11,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 2
+    },
+    {
+      "vendor": "Dell",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "TeamT5",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "BeyondTrust",
+      "kev": 3,
+      "ransomware": 1,
+      "ratio": 0.333,
+      "recenti": 1
+    },
+    {
+      "vendor": "Notepad++",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "React Native Community",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "SmarterTools",
+      "kev": 3,
+      "ransomware": 3,
+      "ratio": 1.0,
+      "recenti": 3
+    },
+    {
+      "vendor": "GNU",
+      "kev": 5,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Versa",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Vite",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Prettier",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Gogs",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Hewlett Packard Enterprise (HPE)",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "MongoDB",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Digiever",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "WatchGuard",
+      "kev": 4,
+      "ransomware": 1,
+      "ratio": 0.25,
+      "recenti": 2
+    },
+    {
+      "vendor": "ASUS",
+      "kev": 3,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Gladinet",
+      "kev": 4,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 3
+    },
+    {
+      "vendor": "Sierra Wireless",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "OSGeo",
+      "kev": 3,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "RARLAB",
+      "kev": 5,
+      "ransomware": 4,
+      "ratio": 0.8,
+      "recenti": 1
+    },
+    {
+      "vendor": "Array Networks ",
+      "kev": 2,
+      "ransomware": 1,
+      "ratio": 0.5,
+      "recenti": 1
+    },
+    {
+      "vendor": "Meta",
+      "kev": 1,
+      "ransomware": 1,
+      "ratio": 1.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "OpenPLC",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 2
+    },
+    {
+      "vendor": "CWP",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "XWiki",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Dassault Systèmes",
+      "kev": 3,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 2
+    },
+    {
+      "vendor": "Motex",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "IGEL",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "SKYSEA",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Grafana Labs",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Mozilla",
+      "kev": 13,
+      "ransomware": 1,
+      "ratio": 0.077,
+      "recenti": 1
+    },
+    {
+      "vendor": "Jenkins",
+      "kev": 6,
+      "ransomware": 1,
+      "ratio": 0.167,
+      "recenti": 0
+    },
+    {
+      "vendor": "Juniper",
+      "kev": 8,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Smartbedded",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Sudo",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Libraesva",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Fortra",
+      "kev": 4,
+      "ransomware": 2,
+      "ratio": 0.5,
+      "recenti": 0
+    },
+    {
+      "vendor": "Adminer",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Sitecore",
+      "kev": 4,
+      "ransomware": 1,
+      "ratio": 0.25,
+      "recenti": 0
+    },
+    {
+      "vendor": "TP-Link",
+      "kev": 6,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Meta Platforms",
+      "kev": 3,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Git",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "SysAid",
+      "kev": 3,
+      "ransomware": 1,
+      "ratio": 0.333,
+      "recenti": 0
+    },
+    {
+      "vendor": "CrushFTP",
+      "kev": 3,
+      "ransomware": 1,
+      "ratio": 0.333,
+      "recenti": 0
+    },
+    {
+      "vendor": "Rails",
+      "kev": 3,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "PHP",
+      "kev": 3,
+      "ransomware": 1,
+      "ratio": 0.333,
+      "recenti": 0
+    },
+    {
+      "vendor": "Looking Glass",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "TeleMessage",
+      "kev": 3,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "AMI",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Wazuh",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Erlang",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "ZKTeco",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Srimax",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "MDaemon",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "SAP",
+      "kev": 14,
+      "ransomware": 3,
+      "ratio": 0.214,
+      "recenti": 0
+    },
+    {
+      "vendor": "DrayTek",
+      "kev": 5,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "GeoVision",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "FreeType",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Commvault",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Yiiframework",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Qualitia",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "reviewdog",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "NAKIVO",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Edimax",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "tj-actions",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Advantive",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "VMware",
+      "kev": 26,
+      "ransomware": 9,
+      "ratio": 0.346,
+      "recenti": 0
+    },
+    {
+      "vendor": "Hitachi Vantara",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Mitel",
+      "kev": 7,
+      "ransomware": 5,
+      "ratio": 0.714,
+      "recenti": 0
+    },
+    {
+      "vendor": "Trimble",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Sophos",
+      "kev": 7,
+      "ransomware": 2,
+      "ratio": 0.286,
+      "recenti": 0
+    },
+    {
+      "vendor": "Audinate",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "7-Zip",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Paessler",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "JQuery",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Aviatrix",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Qlik",
+      "kev": 3,
+      "ransomware": 3,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Acclaim Systems",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Reolink",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "NUUO",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Cleo",
+      "kev": 2,
+      "ransomware": 2,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "CyberPersons",
+      "kev": 2,
+      "ransomware": 2,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "ProjectSend",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "North Grid",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Atlassian",
+      "kev": 13,
+      "ransomware": 8,
+      "ratio": 0.615,
+      "recenti": 0
+    },
+    {
+      "vendor": "Nostromo",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "PTZOptics",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "ScienceLogic",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Veeam",
+      "kev": 4,
+      "ransomware": 4,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "ImageMagick",
+      "kev": 3,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Kingsoft",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Dahua",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "ServiceNow",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Twilio",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Rejetto",
+      "kev": 2,
+      "ransomware": 1,
+      "ratio": 0.5,
+      "recenti": 0
+    },
+    {
+      "vendor": "PHP Group",
+      "kev": 1,
+      "ransomware": 1,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Arm",
+      "kev": 9,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Justice AV Solutions",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "NextGen Healthcare",
+      "kev": 1,
+      "ransomware": 1,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Nice",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Sunhillo",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Joomla!",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Spreadsheet::ParseExcel",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "FXC",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "QNAP",
+      "kev": 11,
+      "ransomware": 9,
+      "ratio": 0.818,
+      "recenti": 0
+    },
+    {
+      "vendor": "Unitronics",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "IETF",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "MinIO",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Realtek",
+      "kev": 3,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Ignite Realtime",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "SolarView",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Netwrix",
+      "kev": 1,
+      "ransomware": 1,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Barracuda Networks",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Ruckus Wireless",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Novi Survey",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Veritas",
+      "kev": 3,
+      "ransomware": 3,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Samba",
+      "kev": 1,
+      "ransomware": 1,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "XStream",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Plex",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Zoho",
+      "kev": 9,
+      "ransomware": 2,
+      "ratio": 0.222,
+      "recenti": 0
+    },
+    {
+      "vendor": "Teclib",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "ZK Framework",
+      "kev": 1,
+      "ransomware": 1,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Cacti",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Intel",
+      "kev": 2,
+      "ransomware": 1,
+      "ratio": 0.5,
+      "recenti": 0
+    },
+    {
+      "vendor": "TerraMaster",
+      "kev": 1,
+      "ransomware": 1,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "SugarCRM",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Telerik",
+      "kev": 2,
+      "ransomware": 1,
+      "ratio": 0.5,
+      "recenti": 0
+    },
+    {
+      "vendor": "TIBCO",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "GIGABYTE",
+      "kev": 4,
+      "ransomware": 4,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Code Aurora",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "NETGEAR",
+      "kev": 8,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "dotCMS",
+      "kev": 1,
+      "ransomware": 1,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "VMware Tanzu",
+      "kev": 3,
+      "ransomware": 1,
+      "ratio": 0.333,
+      "recenti": 0
+    },
+    {
+      "vendor": "WebRTC",
+      "kev": 1,
+      "ransomware": 1,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Delta Electronics",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "PEAR",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Artifex",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Kaseya",
+      "kev": 3,
+      "ransomware": 3,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "WebKitGTK",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "OpenSSL",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Crestron",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Schneider Electric",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Trihedral",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "InduSoft",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Alcatel",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Checkbox",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Dasan",
+      "kev": 2,
+      "ransomware": 1,
+      "ratio": 0.5,
+      "recenti": 0
+    },
+    {
+      "vendor": "Redis",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "OpenBSD",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "QNAP Systems",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Webmin",
+      "kev": 1,
+      "ransomware": 1,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "LG",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Arcserve",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Elastic",
+      "kev": 3,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "D-Link and TRENDnet",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Hewlett Packard (HP)",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Exim",
+      "kev": 5,
+      "ransomware": 1,
+      "ratio": 0.2,
+      "recenti": 0
+    },
+    {
+      "vendor": "phpMyAdmin",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Pulse Secure",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Treck TCP/IP stack",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "ChakraCore",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Siemens",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Zabbix",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "PHPUnit",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Grandstream",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "October CMS",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Nagios",
+      "kev": 4,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Npm package",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Primetek",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "FatPipe",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Sonatype",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Embedthis",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Fuel CMS",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Pi-hole",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Perl",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Accellion",
+      "kev": 4,
+      "ransomware": 4,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Amcrest",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "MediaTek",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Arcadyan",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "BQE",
+      "kev": 1,
+      "ransomware": 1,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "DotNetNuke (DNN)",
+      "kev": 3,
+      "ransomware": 1,
+      "ratio": 0.333,
+      "recenti": 0
+    },
+    {
+      "vendor": "Docker",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "EyesOfNetwork",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "ForgeRock",
+      "kev": 1,
+      "ransomware": 1,
+      "ratio": 1.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Liferay",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "McAfee",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Micro Focus",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Netis",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "PlaySMS",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "rConfig",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "SaltStack",
+      "kev": 3,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "SIMalliance",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Sumavision",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Symantec",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "TeamViewer",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Tenda",
+      "kev": 3,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "ThinkPHP",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "TVT",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Unraid",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "vBulletin",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    },
+    {
+      "vendor": "Yealink",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 0
+    }
+  ]
+}
