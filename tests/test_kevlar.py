@@ -247,6 +247,24 @@ def test_report_stack_leggibile():
     assert "nessun red flag" in testo and "Tailscale" in testo
 
 
+def test_report_stack_segnala_campione_piccolo_e_prodotto():
+    # Caso JetBrains reale: 4 KEV, tutte TeamCity, tutte ransomware -> 100% ma
+    # campione piccolo. Il report deve dirlo (onesta' statistica + prodotto).
+    vulns = [_kev("JetBrains", product="TeamCity", ransomware=True) for _ in range(4)]
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    testo = kv.report_stack(kv.valuta_stack(agg, ["JetBrains"]))
+    assert "100%" in testo
+    assert "campione piccolo" in testo        # cautela sul campione
+    assert "TeamCity" in testo                # il prodotto vero, non "l'IDE"
+
+
+def test_filtro_web_segnala_campione_piccolo():
+    vulns = [_kev("SmallCo", ransomware=True) for _ in range(4)]  # <10 KEV
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    html = kv.genera_html(agg, oggi=OGGI)
+    assert "campione piccolo" in html
+
+
 def test_leggi_stack_da_lista_e_da_file(tmp_path):
     assert kv._leggi_stack("Fortinet, QNAP") == ["Fortinet", " QNAP"]
     f = tmp_path / "stack.txt"

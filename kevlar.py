@@ -323,7 +323,8 @@ _JS_FILTRO_BODY = (
     "var p=document.createElement('p');p.textContent='Dei '+ts.length+' inseriti: '+tr.length"
     "+' nel catalogo CISA KEV'+(tr.length?' (tasso ransomware medio '+avg+'%)':'')+'.';o.appendChild(p);"
     "if(tr.length){var u=document.createElement('ul');tr.forEach(function(x){var li=document.createElement('li');"
-    "li.textContent=x[0]+' \\u2014 '+x[1]+' KEV, tasso '+x[2]+'%';u.appendChild(li);});o.appendChild(u);}"
+    "li.textContent=x[0]+' \\u2014 '+x[1]+' KEV, tasso '+x[2]+'%'+(x[1]<10?' (campione piccolo)':'');"
+    "u.appendChild(li);});o.appendChild(u);}"
     "if(ab.length){var q=document.createElement('p');q.textContent='Non nel KEV (nessun red flag): '"
     "+ab.join(', ')+'.';o.appendChild(q);}"
     "}"
@@ -488,13 +489,32 @@ def valuta_stack(agg, vendors):
 
 
 def report_stack(ris) -> str:
-    """Rende leggibile il risultato di valuta_stack (per il terminale)."""
+    """Rende leggibile il risultato di valuta_stack (per il terminale). Onesto
+    sul campione: un tasso su poche KEV (es. 4/4 = 100%) e' segnalato come poco
+    significativo - la stessa cautela del filtro >=10 della classifica. E mostra
+    il prodotto dominante, cosi' "JetBrains 100%" si legge "tutte su TeamCity"."""
     n = len(ris["trovati"]) + len(ris["assenti"])
     out = [f"Il tuo stack: {len(ris['trovati'])}/{n} vendor nel CISA KEV "
            f"(tasso ransomware medio {int(round(ris['tasso_medio'] * 100))}%)."]
+    piccoli = 0
     for _, vd, d in sorted(ris["trovati"], key=lambda x: -x[2]["ratio"]):
-        out.append(f"  [{int(round(d['ratio'] * 100)):>3}%] {vd}  "
-                   f"({d['ransomware']}/{d['kev']} KEV armate dal ransomware)")
+        pezzo = ""
+        if d.get("prodotti"):
+            pn, pc = d["prodotti"].most_common(1)[0]
+            if pc == d["kev"]:
+                pezzo = f" - tutte su {pn}"
+            elif pc >= d["kev"] * 0.6:
+                pezzo = f" - per lo piu' {pn}"
+        nota = ""
+        if d["kev"] < MIN_KEV_RATIO:
+            piccoli += 1
+            nota = f"  [campione piccolo: {d['kev']} KEV, tasso poco significativo]"
+        out.append(f"  [{int(round(d['ratio'] * 100)):>3}%] {vd}{pezzo}  "
+                   f"({d['ransomware']}/{d['kev']} KEV armate){nota}")
+    if piccoli:
+        out.append(f"  Nota: {piccoli} con meno di {MIN_KEV_RATIO} KEV. Un tasso su "
+                   f"pochi casi (es. 4/4 = 100%) non e' un giudizio robusto sul vendor: "
+                   f"e' un 'verifica QUEL prodotto, se lo esponi'.")
     if ris["assenti"]:
         out.append(f"  Non nel KEV (nessun red flag): {', '.join(ris['assenti'])}")
     return "\n".join(out)
