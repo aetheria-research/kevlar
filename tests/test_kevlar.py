@@ -109,11 +109,22 @@ def test_genera_html_struttura_e_disclaimer():
 
 def test_genera_html_escape_nomi_vendor():
     # I nomi vendor vengono da dato esterno: vanno escapizzati, non iniettati.
-    vulns = [_kev("A<b>&co", ransomware=True) for _ in range(10)]
+    # Copre anche " e ' (sicurezza anche in contesto attributo).
+    vulns = [_kev('A"<b>&x', ransomware=True) for _ in range(10)]
     agg = kv.aggrega_vendor(vulns, oggi=OGGI)
     html = kv.genera_html(agg, oggi=OGGI)
-    assert "A<b>&co" not in html
-    assert "A&lt;b&gt;&amp;co" in html
+    assert 'A"<b>&x' not in html
+    assert "A&quot;&lt;b&gt;&amp;x" in html
+
+
+def test_genera_html_ha_csp_e_niente_script():
+    # Pagina pubblica: CSP restrittiva + nessun <script> inline (giorno 1).
+    vulns = [_kev("X", ransomware=True) for _ in range(10)]
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    html = kv.genera_html(agg, oggi=OGGI)
+    assert "Content-Security-Policy" in html
+    assert "default-src 'none'" in html
+    assert "<script" not in html.lower()
 
 
 def test_scrivi_report_emette_md_json_e_html(tmp_path):

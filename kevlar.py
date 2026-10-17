@@ -198,8 +198,11 @@ Chi "scotta" ora.
 
 
 def _esc(s):
-    """Escape HTML minimo: i nomi vendor arrivano da dato esterno (CISA)."""
-    return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    """Escape HTML dei nomi vendor (dato esterno da CISA). Copre anche apici e
+    virgolette: cosi' e' sicuro anche se un valore finisce in un attributo (es.
+    il filtro client-side del giorno 4), non solo nel testo."""
+    return (str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            .replace('"', "&quot;").replace("'", "&#39;"))
 
 
 def _tabella_html(righe, intestazione):
@@ -274,6 +277,8 @@ def genera_html(agg, catalog_version="?", oggi=None, top=15) -> str:
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KEVlar - Vendor Risk</title>
 <meta name="description" content="Rischio per vendor pesato sul ransomware, dal catalogo pubblico CISA KEV. TLP:CLEAR.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
 <style>{_HTML_CSS}</style>
 </head>
 <body>
