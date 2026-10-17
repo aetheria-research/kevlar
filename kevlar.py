@@ -197,6 +197,142 @@ Chi "scotta" ora.
 """
 
 
+def _esc(s):
+    """Escape HTML dei nomi vendor (dato esterno da CISA). Copre anche apici e
+    virgolette: cosi' e' sicuro anche se un valore finisce in un attributo (es.
+    il filtro client-side del giorno 4), non solo nel testo."""
+    return (str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+            .replace('"', "&quot;").replace("'", "&#39;"))
+
+
+def _tabella_html(righe, intestazione):
+    th = "".join(f"<th>{_esc(h)}</th>" for h in intestazione)
+    corpo = "\n".join(
+        "<tr>" + "".join(f"<td>{_esc(x)}</td>" for x in r) + "</tr>" for r in righe)
+    return (f'<div class="tw"><table>\n<thead><tr>{th}</tr></thead>\n'
+            f'<tbody>\n{corpo}\n</tbody></table></div>')
+
+
+# CSS in costante a parte: stringa normale (parentesi letterali, niente doubling
+# nelle f-string). Token su :root + override dark via prefers-color-scheme.
+_HTML_CSS = """
+:root { --bg:#f7f8fa; --fg:#1b1f24; --muted:#5a6572; --card:#fff; --bordo:#e2e6eb;
+  --accent:#b4232a; --accent-soft:#fbeaea; --th:#eef1f4; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0f1216; --fg:#e6e9ed;
+  --muted:#9aa4b0; --card:#161a20; --bordo:#2a3139; --accent:#ff6b72;
+  --accent-soft:#2a1618; --th:#1c2128; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg);
+  font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+.wrap { max-width:920px; margin:0 auto; padding:32px 16px 64px; }
+.tlp { font:700 12px/1 system-ui; letter-spacing:.08em; color:var(--muted); }
+h1 { font-size:1.9rem; margin:.2em 0 .1em; }
+h2 { font-size:1.25rem; margin:2em 0 .2em; border-bottom:2px solid var(--bordo);
+  padding-bottom:.25em; }
+.sotto { color:var(--muted); margin:0 0 1em; }
+.stat { display:flex; flex-wrap:wrap; gap:10px; margin:18px 0; }
+.stat div { background:var(--card); border:1px solid var(--bordo); border-radius:10px;
+  padding:10px 14px; }
+.stat b { font-size:1.4rem; display:block; }
+.callout { background:var(--accent-soft); border-left:4px solid var(--accent);
+  border-radius:8px; padding:12px 16px; margin:18px 0; }
+.tw { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; background:var(--card);
+  border:1px solid var(--bordo); border-radius:10px; margin:8px 0 4px; font-size:.95rem; }
+th,td { text-align:left; padding:9px 12px; border-bottom:1px solid var(--bordo); }
+th { background:var(--th); font-weight:600; }
+td:not(:first-child),th:not(:first-child) { text-align:right; white-space:nowrap; }
+tbody tr:last-child td { border-bottom:0; }
+.note { color:var(--muted); font-size:.9rem; }
+footer { margin-top:2.5em; color:var(--muted); font-size:.85rem;
+  border-top:1px solid var(--bordo); padding-top:1em; }
+a { color:var(--accent); }
+"""
+
+
+def genera_html(agg, catalog_version="?", oggi=None, top=15) -> str:
+    """Pagina HTML self-contained (stessi dati di genera_report). Niente build,
+    niente dipendenze: pronta per GitHub Pages."""
+    oggi = oggi or datetime.date.today()
+    totale = sum(d["kev"] for d in agg.values())
+    tot_ransom = sum(d["ransomware"] for d in agg.values())
+    perc = int(round(tot_ransom / totale * 100)) if totale else 0
+
+    t1 = _tabella_html(
+        [(vd, d["kev"], d["ransomware"], f"{int(d['ratio'] * 100)}%", d["recenti"])
+         for vd, d in classifica_ransomware(agg, top)],
+        ["Vendor", "KEV", "Ransomware", "Tasso", f"Ultimi {MESI_TREND}m"])
+    t2 = _tabella_html(
+        [(vd, d["kev"], f"{int(d['ratio'] * 100)}%")
+         for vd, d in classifica_tasso(agg, top=top)],
+        ["Vendor", "KEV", "Tasso ransomware"])
+    t3 = _tabella_html(
+        [(vd, d["recenti"], d["kev"]) for vd, d in classifica_recenti(agg, top)],
+        ["Vendor", f"Ultimi {MESI_TREND}m", "KEV totali"])
+
+    return f"""<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KEVlar - Vendor Risk</title>
+<meta name="description" content="Rischio per vendor pesato sul ransomware, dal catalogo pubblico CISA KEV. TLP:CLEAR.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<style>{_HTML_CSS}</style>
+</head>
+<body>
+<div class="wrap">
+<div class="tlp">TLP:CLEAR</div>
+<h1>KEVlar &mdash; Vendor Risk</h1>
+<p class="sotto">Rischio per vendor pesato sul ransomware, dal catalogo pubblico
+<strong>CISA KEV</strong>. Catalogo {_esc(catalog_version)} &middot; {oggi.strftime('%Y-%m-%d')}.</p>
+
+<div class="stat">
+  <div><b>{totale}</b>vulnerabilita' sfruttate (KEV)</div>
+  <div><b>{tot_ransom}</b>armate dal ransomware ({perc}%)</div>
+  <div><b>{len(agg)}</b>vendor distinti</div>
+</div>
+
+<div class="callout">
+<strong>Come leggerlo.</strong> Il numero di KEV da solo e' fuorviante: i prodotti
+ubiqui (Windows, Chrome, Linux) sono in cima perche' piu' usati e scrutinati, non
+perche' peggiori. Il segnale che orienta una scelta e' il <strong>tasso di
+weaponizzazione</strong> (quante falle sfruttate finiscono armate) e il
+<strong>trend recente</strong>. Un tasso alto con campione ampio = tipicamente
+edge/appliance (VPN, firewall, gateway, NAS): la porta d'ingresso preferita.
+</div>
+
+<h2>1. Weaponizzazione ransomware (segnale principale)</h2>
+<p class="sotto">Vendor le cui KEV sfruttate finiscono piu' spesso in campagne ransomware.</p>
+{t1}
+
+<h2>2. Tasso di weaponizzazione (campione &ge; {MIN_KEV_RATIO} KEV)</h2>
+<p class="sotto">Il cluster "pensaci due volte / patcha aggressivo" &mdash; spesso edge/appliance.</p>
+{t2}
+
+<h2>3. Trend: KEV aggiunte negli ultimi {MESI_TREND} mesi</h2>
+<p class="sotto">Chi "scotta" ora.</p>
+{t3}
+
+<footer>
+<p class="note">Dati dal catalogo <strong>pubblico</strong> CISA KEV: una fotografia
+alla data del catalogo. Il tasso di weaponizzazione e' <strong>una lente</strong> per
+prioritizzare patch e perimetro, <strong>non</strong> un giudizio sulla qualita'
+complessiva di un prodotto o di un'azienda. La classificazione "ransomware" e' quella
+pubblicata da CISA (knownRansomwareCampaignUse), non un'attribuzione dell'autore. I
+marchi appartengono ai rispettivi titolari; nessuna affiliazione e' implicata.</p>
+<p>Generato da <strong>KEVlar</strong> su dato pubblico CISA KEV &middot;
+<a href="https://github.com/aetheria-research/kevlar">github.com/aetheria-research/kevlar</a>
+&middot; Autore: Manuel Carletti.</p>
+<div class="tlp">TLP:CLEAR</div>
+</footer>
+</div>
+</body>
+</html>
+"""
+
+
 def snapshot(agg, catalog_version="?", oggi=None) -> dict:
     """Forma serializzabile (JSON) con tutti i vendor e i metadati del catalogo."""
     oggi = oggi or datetime.date.today()
@@ -214,7 +350,9 @@ def snapshot(agg, catalog_version="?", oggi=None) -> dict:
     }
 
 
-def scrivi_report(path_kev, output_dir=OUTPUT_DIR, oggi=None):
+def scrivi_report(path_kev, output_dir=OUTPUT_DIR, oggi=None, html_path=None):
+    """Scrive report .md + snapshot .json + pagina HTML. html_path sovrascrive il
+    percorso HTML (default: <output_dir>/index.html, comodo per GitHub Pages)."""
     oggi = oggi or datetime.date.today()
     vulns, ver = carica_kev(path_kev)
     agg = aggrega_vendor(vulns, oggi=oggi)
@@ -225,6 +363,9 @@ def scrivi_report(path_kev, output_dir=OUTPUT_DIR, oggi=None):
     (output_dir / "vendor_risk_latest.json").write_text(
         json.dumps(snapshot(agg, ver, oggi), ensure_ascii=False, indent=2),
         encoding="utf-8")
+    html_out = Path(html_path) if html_path else (output_dir / "index.html")
+    html_out.parent.mkdir(parents=True, exist_ok=True)
+    html_out.write_text(genera_html(agg, catalog_version=ver, oggi=oggi), encoding="utf-8")
     return out
 
 
@@ -232,6 +373,7 @@ def main():
     ap = argparse.ArgumentParser(description="KEVlar - vendor risk da CISA KEV.")
     ap.add_argument("--file", help="usa un catalogo KEV locale invece di scaricarlo")
     ap.add_argument("--out", default=str(OUTPUT_DIR), help="cartella di output")
+    ap.add_argument("--html", help="percorso del file HTML (default: <out>/index.html)")
     ap.add_argument("--no-download", action="store_true",
                     help="non scaricare: usa la cache locale se presente")
     args = ap.parse_args()
@@ -244,9 +386,11 @@ def main():
         print("Scarico il catalogo CISA KEV (dato pubblico)...")
         kev_path = scarica_kev()
 
-    out = scrivi_report(kev_path, args.out)
+    out = scrivi_report(kev_path, args.out, html_path=args.html)
+    html_out = Path(args.html) if args.html else Path(args.out) / "index.html"
     print(f"  report:   {out}")
     print(f"  snapshot: {Path(args.out) / 'vendor_risk_latest.json'}")
+    print(f"  html:     {html_out}")
 
 
 if __name__ == "__main__":

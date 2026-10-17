@@ -96,6 +96,56 @@ def test_genera_report_contiene_sezioni_e_disclaimer():
     assert "BigCo" in testo
 
 
+def test_genera_html_struttura_e_disclaimer():
+    vulns = [_kev("BigCo", ransomware=(i < 5)) for i in range(12)]
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    html = kv.genera_html(agg, catalog_version="2026.09", oggi=OGGI)
+    assert html.lstrip().startswith("<!doctype html>")
+    assert "<table" in html and "</table>" in html
+    assert "TLP:CLEAR" in html
+    assert "Tasso di weaponizzazione" in html
+    assert "BigCo" in html and "2026.09" in html
+
+
+def test_genera_html_escape_nomi_vendor():
+    # I nomi vendor vengono da dato esterno: vanno escapizzati, non iniettati.
+    # Copre anche " e ' (sicurezza anche in contesto attributo).
+    vulns = [_kev('A"<b>&x', ransomware=True) for _ in range(10)]
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    html = kv.genera_html(agg, oggi=OGGI)
+    assert 'A"<b>&x' not in html
+    assert "A&quot;&lt;b&gt;&amp;x" in html
+
+
+def test_genera_html_ha_csp_e_niente_script():
+    # Pagina pubblica: CSP restrittiva + nessun <script> inline (giorno 1).
+    vulns = [_kev("X", ransomware=True) for _ in range(10)]
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    html = kv.genera_html(agg, oggi=OGGI)
+    assert "Content-Security-Policy" in html
+    assert "default-src 'none'" in html
+    assert "<script" not in html.lower()
+
+
+def test_scrivi_report_emette_md_json_e_html(tmp_path):
+    p = tmp_path / "kev.json"
+    p.write_text(json.dumps({"catalogVersion": "2026.09",
+                             "vulnerabilities": [_kev("X", ransomware=True)]}),
+                 encoding="utf-8")
+    out = kv.scrivi_report(p, output_dir=tmp_path / "o", oggi=OGGI)
+    assert out.exists()                                        # .md
+    assert (tmp_path / "o" / "vendor_risk_latest.json").exists()
+    assert (tmp_path / "o" / "index.html").exists()            # NUOVO
+
+
+def test_scrivi_report_rispetta_html_path(tmp_path):
+    p = tmp_path / "kev.json"
+    p.write_text(json.dumps([_kev("X")]), encoding="utf-8")
+    html = tmp_path / "public" / "index.html"
+    kv.scrivi_report(p, output_dir=tmp_path / "o", oggi=OGGI, html_path=str(html))
+    assert html.exists()
+
+
 def test_snapshot_struttura():
     vulns = [_kev("X", ransomware=True)]
     agg = kv.aggrega_vendor(vulns, oggi=OGGI)
