@@ -460,6 +460,55 @@ def snapshot(agg, catalog_version="?", oggi=None) -> dict:
     }
 
 
+def valuta_stack(agg, vendors):
+    """Dato lo stack dell'utente (lista di vendor), ritorna quali compaiono nel
+    KEV (con kev/ransomware/tasso) e quali no. Match 'morbido' (nome parziale),
+    coerente col filtro 'ti riguarda?' della pagina: un termine aggancia il
+    vendor col tasso piu' alto fra quelli che combaciano. Niente da inventare:
+    chi non c'e' finisce in 'assenti' (nessun red flag, non prova di sicurezza)."""
+    coppie = [(vd.lower(), vd, d) for vd, d in agg.items()]
+    trovati, assenti, somma = [], [], 0.0
+    for raw in vendors:
+        t = raw.strip()
+        tl = t.lower()
+        if not tl:
+            continue
+        best = None
+        for vdl, vd, d in coppie:
+            if vdl in tl or tl in vdl:
+                if best is None or d["ratio"] > best[2]["ratio"]:
+                    best = (vdl, vd, d)
+        if best:
+            trovati.append((t, best[1], best[2]))
+            somma += best[2]["ratio"]
+        else:
+            assenti.append(t)
+    tasso = round(somma / len(trovati), 3) if trovati else 0.0
+    return {"trovati": trovati, "assenti": assenti, "tasso_medio": tasso}
+
+
+def report_stack(ris) -> str:
+    """Rende leggibile il risultato di valuta_stack (per il terminale)."""
+    n = len(ris["trovati"]) + len(ris["assenti"])
+    out = [f"Il tuo stack: {len(ris['trovati'])}/{n} vendor nel CISA KEV "
+           f"(tasso ransomware medio {int(round(ris['tasso_medio'] * 100))}%)."]
+    for _, vd, d in sorted(ris["trovati"], key=lambda x: -x[2]["ratio"]):
+        out.append(f"  [{int(round(d['ratio'] * 100)):>3}%] {vd}  "
+                   f"({d['ransomware']}/{d['kev']} KEV armate dal ransomware)")
+    if ris["assenti"]:
+        out.append(f"  Non nel KEV (nessun red flag): {', '.join(ris['assenti'])}")
+    return "\n".join(out)
+
+
+def _leggi_stack(valore):
+    """--stack accetta un file (un vendor per riga o separati da virgola) oppure
+    direttamente una lista separata da virgola."""
+    import re as _re
+    p = Path(valore)
+    testo = p.read_text(encoding="utf-8") if p.is_file() else valore
+    return [s for s in _re.split(r"[,\n]", testo) if s.strip()]
+
+
 def scrivi_report(path_kev, output_dir=OUTPUT_DIR, oggi=None, html_path=None):
     """Scrive report .md + snapshot .json + pagina HTML. html_path sovrascrive il
     percorso HTML (default: <output_dir>/index.html, comodo per GitHub Pages)."""
@@ -484,6 +533,8 @@ def main():
     ap.add_argument("--file", help="usa un catalogo KEV locale invece di scaricarlo")
     ap.add_argument("--out", default=str(OUTPUT_DIR), help="cartella di output")
     ap.add_argument("--html", help="percorso del file HTML (default: <out>/index.html)")
+    ap.add_argument("--stack", help="i TUOI vendor (lista separata da virgola o file): "
+                    "stampa quali sono nel KEV e il tasso, senza generare il report")
     ap.add_argument("--no-download", action="store_true",
                     help="non scaricare: usa la cache locale se presente")
     args = ap.parse_args()
@@ -495,6 +546,14 @@ def main():
     else:
         print("Scarico il catalogo CISA KEV (dato pubblico)...")
         kev_path = scarica_kev()
+
+    # Modalita' --stack: query focalizzata sul tuo parco tecnologico, niente
+    # file di output (e' una consultazione, non una pubblicazione).
+    if args.stack:
+        vulns, ver = carica_kev(kev_path)
+        agg = aggrega_vendor(vulns)
+        print(report_stack(valuta_stack(agg, _leggi_stack(args.stack))))
+        return
 
     out = scrivi_report(kev_path, args.out, html_path=args.html)
     html_out = Path(args.html) if args.html else Path(args.out) / "index.html"

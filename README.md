@@ -64,6 +64,7 @@ Nessuna dipendenza esterna, solo libreria standard (Python 3.9+):
 python kevlar.py                 # scarica il KEV da CISA e genera il report
 python kevlar.py --file kev.json # usa un catalogo locale già scaricato
 python kevlar.py --no-download   # usa la cache locale
+python kevlar.py --stack "Fortinet,QNAP"  # il rischio dei TUOI vendor (sola consultazione)
 ```
 
 Output in `output/`: `vendor_risk_<AAAA-MM>.md`, `vendor_risk_latest.json` e **`index.html`** (la pagina pubblicabile; `--html <path>` per scegliere dove scriverla).
