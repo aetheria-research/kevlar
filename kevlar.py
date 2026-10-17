@@ -30,8 +30,10 @@ Autore: Manuel Carletti - https://www.linkedin.com/in/manuel-c-3b72b7125/
 Licenza: MIT.
 """
 import argparse
+import base64
 import collections
 import datetime
+import hashlib
 import json
 import urllib.request
 from pathlib import Path
@@ -291,7 +293,40 @@ a { color:var(--accent); }
 .kev-lab { fill:var(--fg); }
 .kev-val { fill:var(--fg); font-weight:600; }
 .kev-bar { fill:var(--accent); }
+#kv-in { width:100%; max-width:420px; padding:8px 10px; border:1px solid var(--bordo);
+  border-radius:8px; background:var(--card); color:var(--fg);
+  font:15px system-ui,-apple-system,sans-serif; }
+.kv-out { margin:10px 0 2px; font-size:.95rem; }
+.kv-out ul { margin:6px 0; padding-left:20px; }
+.kv-out li { margin:2px 0; }
 """
+
+
+# Logica del riquadro "Ti riguarda?" (corpo, senza i dati). Gira dopo "var K=...".
+# Solo textContent / createElement sull'input utente: nessun innerHTML, nessun
+# eval -> niente injection. Lo script e' permesso in CSP solo tramite il suo hash
+# sha256 (calcolato alla generazione in genera_html), non con 'unsafe-inline'.
+_JS_FILTRO_BODY = (
+    "var b=document.getElementById('kv-in'),o=document.getElementById('kv-out');"
+    "if(!b)return;"
+    "function upd(){"
+    "var ts=b.value.split(/[,\\n]/).map(function(s){return s.trim().toLowerCase();}).filter(Boolean);"
+    "o.textContent='';"
+    "if(!ts.length){o.textContent='Incolla i tuoi vendor per sapere quali compaiono nel catalogo CISA KEV.';return;}"
+    "var tr=[],ab=[],rt=0;"
+    "ts.forEach(function(t){var h=null;for(var i=0;i<K.length;i++){var dl=K[i][0].toLowerCase();"
+    "if(dl.indexOf(t)>-1||t.indexOf(dl)>-1){if(!h||K[i][2]>h[2])h=K[i];}}"
+    "if(h){tr.push(h);rt+=h[2];}else{ab.push(t);}});"
+    "var avg=tr.length?Math.round(rt/tr.length):0;"
+    "var p=document.createElement('p');p.textContent='Dei '+ts.length+' inseriti: '+tr.length"
+    "+' nel catalogo CISA KEV'+(tr.length?' (tasso ransomware medio '+avg+'%)':'')+'.';o.appendChild(p);"
+    "if(tr.length){var u=document.createElement('ul');tr.forEach(function(x){var li=document.createElement('li');"
+    "li.textContent=x[0]+' \\u2014 '+x[1]+' KEV, tasso '+x[2]+'%';u.appendChild(li);});o.appendChild(u);}"
+    "if(ab.length){var q=document.createElement('p');q.textContent='Non nel KEV (nessun red flag): '"
+    "+ab.join(', ')+'.';o.appendChild(q);}"
+    "}"
+    "b.addEventListener('input',upd);upd();"
+)
 
 
 def genera_html(agg, catalog_version="?", oggi=None, top=15) -> str:
@@ -315,6 +350,23 @@ def genera_html(agg, catalog_version="?", oggi=None, top=15) -> str:
         ["Vendor", f"Ultimi {MESI_TREND}m", "KEV totali"])
     grafico = _grafico_tasso_svg(agg, top)
 
+    # Riquadro "Ti riguarda?": tutti i vendor (non solo i top) finiscono in un
+    # array JS, cosi' il filtro risponde per qualunque vendor l'utente digiti,
+    # anche quelli assenti dal KEV. Lo script e' permesso in CSP SOLO col suo
+    # hash sha256, calcolato qui sul testo esatto (dati inclusi): se cambia, si
+    # ricalcola da solo. Niente 'unsafe-inline' per gli script.
+    kev_lista = [[vd, d["kev"], int(round(d["ratio"] * 100))]
+                 for vd, d in sorted(agg.items(), key=lambda kv: -kv[1]["kev"])]
+    script = ("(function(){var K=" + json.dumps(kev_lista, ensure_ascii=False)
+              + ";" + _JS_FILTRO_BODY + "})();")
+    # Se un nome vendor contenesse "</script>" chiuderebbe il tag in anticipo:
+    # "<\/" e' equivalente in JS e innocuo nell'HTML. L'hash si calcola DOPO,
+    # sul testo esatto che finisce nella pagina.
+    script = script.replace("</", "<\\/")
+    sha = base64.b64encode(hashlib.sha256(script.encode("utf-8")).digest()).decode()
+    csp = ("default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-"
+           + sha + "'; base-uri 'none'; form-action 'none'")
+
     return f"""<!doctype html>
 <html lang="it">
 <head>
@@ -322,7 +374,7 @@ def genera_html(agg, catalog_version="?", oggi=None, top=15) -> str:
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KEVlar - Vendor Risk</title>
 <meta name="description" content="Rischio per vendor pesato sul ransomware, dal catalogo pubblico CISA KEV. TLP:CLEAR.">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="{csp}">
 <meta name="referrer" content="no-referrer">
 <style>{_HTML_CSS}</style>
 </head>
@@ -347,6 +399,15 @@ weaponizzazione</strong> (quante falle sfruttate finiscono armate) e il
 <strong>trend recente</strong>. Un tasso alto con campione ampio = tipicamente
 edge/appliance (VPN, firewall, gateway, NAS): la porta d'ingresso preferita.
 </div>
+
+<h2>Ti riguarda?</h2>
+<p class="sotto">Incolla i tuoi vendor/tecnologie: ti dico quali compaiono nel CISA KEV
+e il tasso ransomware medio del tuo stack.</p>
+<input id="kv-in" type="text" placeholder="Fortinet, Microsoft, VMware" autocomplete="off"
+ aria-label="I tuoi vendor, separati da virgola">
+<div id="kv-out" class="kv-out"></div>
+<p class="note">Assenza dal KEV = nessuna vulnerabilita' sfruttata NOTA e tracciata da
+CISA: e' un buon segno, non una prova di sicurezza.</p>
 
 <h2>1. Weaponizzazione ransomware (segnale principale)</h2>
 <p class="sotto">Vendor le cui KEV sfruttate finiscono piu' spesso in campagne ransomware.</p>
@@ -374,6 +435,7 @@ marchi appartengono ai rispettivi titolari; nessuna affiliazione e' implicata.</
 <div class="tlp">TLP:CLEAR</div>
 </footer>
 </div>
+<script>{script}</script>
 </body>
 </html>
 """

@@ -1,11 +1,14 @@
 # KEVlar
 
+[![Live dashboard](https://img.shields.io/badge/dashboard-live-success)](https://aetheria-research.github.io/kevlar/)
 ![TLP:CLEAR](https://img.shields.io/badge/TLP-CLEAR-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 ![Data](https://img.shields.io/badge/data-CISA%20KEV-informational)
 
 **[🇮🇹 Versione italiana](README.md)**
+
+**🔗 Live dashboard** (self-regenerates weekly from the CISA catalog): **https://aetheria-research.github.io/kevlar/** — with the rate chart and a **"does it affect you?"** filter (paste your vendors, see which are in the KEV).
 
 > Not all flaws weigh the same. **KEVlar** measures vendor risk from the public **CISA KEV** catalog, weighting it by the **ransomware weaponization rate** rather than the raw vulnerability count.
 
@@ -63,8 +66,8 @@ python kevlar.py --file kev.json # use a locally downloaded catalog
 python kevlar.py --no-download   # use the local cache
 ```
 
-Output in `output/`: `vendor_risk_<YYYY-MM>.md` + `vendor_risk_latest.json`.
-A real example is in [`esempio_output/`](esempio_output/).
+Output in `output/`: `vendor_risk_<YYYY-MM>.md`, `vendor_risk_latest.json` and **`index.html`** (the publishable page; use `--html <path>` to choose where it goes).
+A real example is in [`esempio_output/`](esempio_output/). The online version is published automatically by GitHub Actions to GitHub Pages — see [`.github/workflows/kevlar-live.yml`](.github/workflows/kevlar-live.yml).
 
 ## Tests
 
