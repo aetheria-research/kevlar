@@ -31,10 +31,10 @@ jobs:
       # Node 24. Dependabot (.github/dependabot.yml) le tiene aggiornate da solo
       # e puo' pinnarle all'hash di commit per l'indurimento massimo.
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       - name: Setup Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
