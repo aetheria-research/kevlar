@@ -117,6 +117,29 @@ def test_genera_html_escape_nomi_vendor():
     assert "A&quot;&lt;b&gt;&amp;x" in html
 
 
+def test_grafico_tasso_svg_barre_e_valori():
+    vulns = [_kev("EdgeCo", ransomware=(i < 8)) for i in range(10)]  # 80%
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    svg = kv._grafico_tasso_svg(agg)
+    assert svg.startswith("<figure") and "<svg" in svg
+    assert "kev-bar" in svg and "EdgeCo" in svg and "80%" in svg
+    assert "<script" not in svg.lower()  # niente JS: CSP resta chiusa
+
+
+def test_grafico_tasso_svg_vuoto_se_nessun_campione():
+    # solo campioni sotto soglia -> nessuna barra, stringa vuota, pagina regge
+    vulns = [_kev("SmallCo", ransomware=True) for _ in range(3)]
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    assert kv._grafico_tasso_svg(agg) == ""
+
+
+def test_genera_html_include_il_grafico():
+    vulns = [_kev("EdgeCo", ransomware=(i < 6)) for i in range(10)]
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    html = kv.genera_html(agg, oggi=OGGI)
+    assert "kev-bar" in html and "<svg" in html
+
+
 def test_genera_html_ha_csp_e_niente_script():
     # Pagina pubblica: CSP restrittiva + nessun <script> inline (giorno 1).
     vulns = [_kev("X", ransomware=True) for _ in range(10)]
