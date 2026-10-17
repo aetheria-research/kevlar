@@ -7,4 +7,5 @@ venv/
 
 # Output generato a runtime (l'esempio versionato sta in esempio_output/)
 output/
+public/
 cisa_kev_catalog.json

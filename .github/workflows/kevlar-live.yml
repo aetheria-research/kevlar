@@ -1,0 +1,51 @@
+name: KEVlar Live
+
+# Rigenera la pagina pubblica dal catalogo CISA KEV e la pubblica su GitHub Pages.
+# Dato pubblico (nessun segreto). Trigger solo schedulato o manuale: mai l'evento
+# sulle pull request non fidate, che girerebbe con permessi elevati sul codice di
+# una PR esterna.
+on:
+  schedule:
+    - cron: "0 6 * * 1"   # ogni lunedi' alle 06:00 UTC
+  workflow_dispatch: {}    # lancio a mano dalla tab Actions
+
+# Permessi minimi: leggere il repo + pubblicare su Pages via OIDC. Niente altro.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Una pubblicazione alla volta; non interrompere un deploy gia' in corso.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      # NB sicurezza: le action sono pinnate al TAG di major. Per l'indurimento
+      # massimo si pinnano all'hash di commit completo (e si lascia fare a
+      # Dependabot). Sono tutte action ufficiali GitHub, nessuna di terzi.
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Genera la pagina (scarica il CISA KEV pubblico)
+        run: python kevlar.py --out public --html public/index.html
+
+      - name: Upload artifact Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy su GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4

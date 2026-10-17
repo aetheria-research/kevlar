@@ -169,6 +169,22 @@ def test_scrivi_report_rispetta_html_path(tmp_path):
     assert html.exists()
 
 
+def test_workflow_pages_igiene_sicurezza():
+    """Guardia CI: il workflow Pages deve restare 'igienico' - permessi minimi,
+    nessun trigger pericoloso, solo action ufficiali, build dal nostro script."""
+    import pathlib
+    import re
+    root = pathlib.Path(__file__).resolve().parents[1]
+    wf = (root / ".github" / "workflows" / "kevlar-live.yml").read_text(encoding="utf-8")
+    assert "pull_request_target" not in wf        # il trigger pericoloso: MAI
+    assert "contents: read" in wf                 # permessi minimi
+    assert "workflow_dispatch" in wf and "schedule" in wf
+    assert "python kevlar.py" in wf               # build dal nostro codice
+    usi = re.findall(r"uses:\s*([^@\s]+)@", wf)
+    assert usi, "nessuna action trovata"
+    assert all(u.startswith("actions/") for u in usi), f"action non ufficiale: {usi}"
+
+
 def test_snapshot_struttura():
     vulns = [_kev("X", ransomware=True)]
     agg = kv.aggrega_vendor(vulns, oggi=OGGI)
