@@ -310,7 +310,9 @@ _JS_FILTRO_BODY = (
     "var b=document.getElementById('kv-in'),o=document.getElementById('kv-out');"
     "if(!b)return;"
     "function upd(){"
-    "var ts=b.value.split(/[,\\n]/).map(function(s){return s.trim().toLowerCase();}).filter(Boolean);"
+    "var ts=b.value.slice(0,2000).split(/[,\\n]/).map(function(s){"
+    "return s.trim().toLowerCase().replace(/[^a-z0-9 ._\\/-]/g,'').slice(0,64);"
+    "}).filter(Boolean).slice(0,50);"
     "o.textContent='';"
     "if(!ts.length){o.textContent='Incolla i tuoi vendor per sapere quali compaiono nel catalogo CISA KEV.';return;}"
     "var tr=[],ab=[],rt=0;"
@@ -365,7 +367,7 @@ def genera_html(agg, catalog_version="?", oggi=None, top=15) -> str:
     script = script.replace("</", "<\\/")
     sha = base64.b64encode(hashlib.sha256(script.encode("utf-8")).digest()).decode()
     csp = ("default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-"
-           + sha + "'; base-uri 'none'; form-action 'none'")
+           + sha + "'; object-src 'none'; base-uri 'none'; form-action 'none'")
 
     return f"""<!doctype html>
 <html lang="it">
@@ -403,8 +405,8 @@ edge/appliance (VPN, firewall, gateway, NAS): la porta d'ingresso preferita.
 <h2>Ti riguarda?</h2>
 <p class="sotto">Incolla i tuoi vendor/tecnologie: ti dico quali compaiono nel CISA KEV
 e il tasso ransomware medio del tuo stack.</p>
-<input id="kv-in" type="text" placeholder="Fortinet, Microsoft, VMware" autocomplete="off"
- aria-label="I tuoi vendor, separati da virgola">
+<input id="kv-in" type="text" maxlength="2000" placeholder="Fortinet, Microsoft, VMware"
+ autocomplete="off" spellcheck="false" aria-label="I tuoi vendor, separati da virgola">
 <div id="kv-out" class="kv-out"></div>
 <p class="note">Assenza dal KEV = nessuna vulnerabilita' sfruttata NOTA e tracciata da
 CISA: e' un buon segno, non una prova di sicurezza.</p>

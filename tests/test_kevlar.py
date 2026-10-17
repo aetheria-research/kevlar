@@ -165,6 +165,18 @@ def test_genera_html_csp_hash_combacia_con_lo_script():
     assert ("sha256-" + h) in html, "l'hash CSP non combacia con lo script"
 
 
+def test_genera_html_input_indurito():
+    # Difesa in profondita' sull'input del filtro: lunghezza + numero termini +
+    # allowlist dei caratteri; CSP senza plugin/embed.
+    vulns = [_kev("X", ransomware=True) for _ in range(10)]
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    html = kv.genera_html(agg, oggi=OGGI)
+    assert 'maxlength="2000"' in html          # input limitato
+    assert "object-src 'none'" in html          # niente plugin/embed
+    assert ".slice(0,50)" in html               # cap sul numero di termini
+    assert "replace(/[^a-z0-9" in html          # allowlist sui caratteri
+
+
 def test_genera_html_filtro_ti_riguarda_presente_coi_dati():
     vulns = [_kev("EdgeCo", ransomware=(i < 6)) for i in range(10)]
     agg = kv.aggrega_vendor(vulns, oggi=OGGI)
