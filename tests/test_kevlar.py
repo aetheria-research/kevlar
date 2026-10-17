@@ -221,6 +221,39 @@ def test_workflow_pages_igiene_sicurezza():
     assert all(u.startswith("actions/") for u in usi), f"action non ufficiale: {usi}"
 
 
+def test_valuta_stack_trova_e_separa():
+    vulns = [_kev("Fortinet", ransomware=(i < 5)) for i in range(10)]   # 50%
+    vulns += [_kev("QNAP", ransomware=True) for _ in range(4)]           # 100%
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    r = kv.valuta_stack(agg, ["Fortinet", "QNAP", "Tailscale"])
+    nomi = [t[1] for t in r["trovati"]]
+    assert "Fortinet" in nomi and "QNAP" in nomi
+    assert r["assenti"] == ["Tailscale"]          # non nel KEV -> assente, onesto
+    assert 0.74 < r["tasso_medio"] < 0.76         # media di 50% e 100%
+
+
+def test_valuta_stack_match_morbido():
+    vulns = [_kev("Fortinet", ransomware=True) for _ in range(10)]
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    r = kv.valuta_stack(agg, ["forti"])           # nome parziale
+    assert len(r["trovati"]) == 1 and r["trovati"][0][1] == "Fortinet"
+
+
+def test_report_stack_leggibile():
+    vulns = [_kev("QNAP", ransomware=True) for _ in range(12)]
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    testo = kv.report_stack(kv.valuta_stack(agg, ["QNAP", "Tailscale"]))
+    assert "Il tuo stack" in testo and "QNAP" in testo
+    assert "nessun red flag" in testo and "Tailscale" in testo
+
+
+def test_leggi_stack_da_lista_e_da_file(tmp_path):
+    assert kv._leggi_stack("Fortinet, QNAP") == ["Fortinet", " QNAP"]
+    f = tmp_path / "stack.txt"
+    f.write_text("Fortinet\nQNAP\nVMware\n", encoding="utf-8")
+    assert kv._leggi_stack(str(f)) == ["Fortinet", "QNAP", "VMware"]
+
+
 def test_snapshot_struttura():
     vulns = [_kev("X", ransomware=True)]
     agg = kv.aggrega_vendor(vulns, oggi=OGGI)
