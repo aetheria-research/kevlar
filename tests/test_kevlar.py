@@ -140,14 +140,50 @@ def test_genera_html_include_il_grafico():
     assert "kev-bar" in html and "<svg" in html
 
 
-def test_genera_html_ha_csp_e_niente_script():
-    # Pagina pubblica: CSP restrittiva + nessun <script> inline (giorno 1).
+def test_genera_html_csp_script_solo_via_hash():
+    # Pagina pubblica: CSP restrittiva; lo script del filtro e' permesso SOLO
+    # tramite il suo hash sha256, mai con 'unsafe-inline'.
     vulns = [_kev("X", ransomware=True) for _ in range(10)]
     agg = kv.aggrega_vendor(vulns, oggi=OGGI)
     html = kv.genera_html(agg, oggi=OGGI)
-    assert "Content-Security-Policy" in html
-    assert "default-src 'none'" in html
-    assert "<script" not in html.lower()
+    assert "Content-Security-Policy" in html and "default-src 'none'" in html
+    assert "script-src 'sha256-" in html
+    assert "script-src 'unsafe-inline'" not in html
+
+
+def test_genera_html_csp_hash_combacia_con_lo_script():
+    # Il browser esegue lo script SOLO se l'hash in CSP combacia col contenuto.
+    import re
+    import hashlib
+    import base64
+    vulns = [_kev("EdgeCo", ransomware=(i < 6)) for i in range(10)]
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    html = kv.genera_html(agg, oggi=OGGI)
+    m = re.search(r"<script>(.*?)</script>", html, re.S)
+    assert m, "script del filtro assente"
+    h = base64.b64encode(hashlib.sha256(m.group(1).encode("utf-8")).digest()).decode()
+    assert ("sha256-" + h) in html, "l'hash CSP non combacia con lo script"
+
+
+def test_genera_html_input_indurito():
+    # Difesa in profondita' sull'input del filtro: lunghezza + numero termini +
+    # allowlist dei caratteri; CSP senza plugin/embed.
+    vulns = [_kev("X", ransomware=True) for _ in range(10)]
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    html = kv.genera_html(agg, oggi=OGGI)
+    assert 'maxlength="2000"' in html          # input limitato
+    assert "object-src 'none'" in html          # niente plugin/embed
+    assert ".slice(0,50)" in html               # cap sul numero di termini
+    assert "replace(/[^a-z0-9" in html          # allowlist sui caratteri
+
+
+def test_genera_html_filtro_ti_riguarda_presente_coi_dati():
+    vulns = [_kev("EdgeCo", ransomware=(i < 6)) for i in range(10)]
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    html = kv.genera_html(agg, oggi=OGGI)
+    assert 'id="kv-in"' in html         # il riquadro
+    assert "non una prova di sicurezza" in html  # il caveat onesto
+    assert "EdgeCo" in html             # dati vendor nel filtro
 
 
 def test_scrivi_report_emette_md_json_e_html(tmp_path):
