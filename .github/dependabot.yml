@@ -1,0 +1,12 @@
+version: 2
+updates:
+  # Tiene aggiornate le action del workflow (le version-bumpa quando escono
+  # nuove release, es. il passaggio a Node 24). Una PR a settimana, raggruppata.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
