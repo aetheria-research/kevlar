@@ -213,6 +213,42 @@ def _tabella_html(righe, intestazione):
             f'<tbody>\n{corpo}\n</tbody></table></div>')
 
 
+def _grafico_tasso_svg(agg, top=12, min_kev=MIN_KEV_RATIO):
+    """Barre orizzontali del TASSO di weaponizzazione per vendor. Serie singola
+    -> un solo colore, nessuna legenda, etichette dirette, asse da 0 a 100%
+    (onesto). SVG inline, nessun JS: tooltip via <title>, la tabella sotto fa da
+    'table view'. Colori via classi CSS -> si adattano al tema chiaro/scuro."""
+    righe = classifica_tasso(agg, min_kev=min_kev, top=top)
+    if not righe:
+        return ""
+    barH, gap, top_m, bot_m = 22, 10, 34, 14
+    x_lab, x0, x1, W = 184, 196, 620, 680
+    H = top_m + len(righe) * (barH + gap) - gap + bot_m
+    p = [f'<svg viewBox="0 0 {W} {H}" width="100%" role="img" '
+         f'aria-label="Tasso di weaponizzazione ransomware per vendor" '
+         f'class="kev-chart">']
+    for tick in (0, 25, 50, 75, 100):  # asse da 0: lunghezza proporzionale al tasso
+        gx = x0 + (x1 - x0) * tick / 100
+        p.append(f'<line class="kev-grid" x1="{gx:.1f}" y1="{top_m - 6}" '
+                 f'x2="{gx:.1f}" y2="{H - bot_m}"/>')
+        p.append(f'<text class="kev-ax" x="{gx:.1f}" y="{top_m - 10}" '
+                 f'text-anchor="middle">{tick}%</text>')
+    y = top_m
+    for vd, d in righe:
+        bw = max((x1 - x0) * d["ratio"], 2)
+        pct = int(round(d["ratio"] * 100))
+        cy = y + barH / 2 + 4
+        p.append(f'<g><title>{_esc(vd)}: {pct}% ({d["ransomware"]}/{d["kev"]} KEV)</title>'
+                 f'<text class="kev-lab" x="{x_lab}" y="{cy:.1f}" text-anchor="end">'
+                 f'{_esc(vd[:22])}</text>'
+                 f'<rect class="kev-bar" x="{x0}" y="{y}" width="{bw:.1f}" '
+                 f'height="{barH}" rx="4"/>'
+                 f'<text class="kev-val" x="{x0 + bw + 6:.1f}" y="{cy:.1f}">{pct}%</text></g>')
+        y += barH + gap
+    p.append('</svg>')
+    return f'<figure class="kev-fig">{"".join(p)}</figure>'
+
+
 # CSS in costante a parte: stringa normale (parentesi letterali, niente doubling
 # nelle f-string). Token su :root + override dark via prefers-color-scheme.
 _HTML_CSS = """
@@ -247,6 +283,14 @@ tbody tr:last-child td { border-bottom:0; }
 footer { margin-top:2.5em; color:var(--muted); font-size:.85rem;
   border-top:1px solid var(--bordo); padding-top:1em; }
 a { color:var(--accent); }
+.kev-fig { margin:12px 0 4px; overflow-x:auto; }
+.kev-chart { max-width:680px; }
+.kev-chart text { font:12px system-ui,-apple-system,sans-serif; }
+.kev-grid { stroke:var(--bordo); stroke-width:1; }
+.kev-ax { fill:var(--muted); }
+.kev-lab { fill:var(--fg); }
+.kev-val { fill:var(--fg); font-weight:600; }
+.kev-bar { fill:var(--accent); }
 """
 
 
@@ -269,6 +313,7 @@ def genera_html(agg, catalog_version="?", oggi=None, top=15) -> str:
     t3 = _tabella_html(
         [(vd, d["recenti"], d["kev"]) for vd, d in classifica_recenti(agg, top)],
         ["Vendor", f"Ultimi {MESI_TREND}m", "KEV totali"])
+    grafico = _grafico_tasso_svg(agg, top)
 
     return f"""<!doctype html>
 <html lang="it">
@@ -309,6 +354,7 @@ edge/appliance (VPN, firewall, gateway, NAS): la porta d'ingresso preferita.
 
 <h2>2. Tasso di weaponizzazione (campione &ge; {MIN_KEV_RATIO} KEV)</h2>
 <p class="sotto">Il cluster "pensaci due volte / patcha aggressivo" &mdash; spesso edge/appliance.</p>
+{grafico}
 {t2}
 
 <h2>3. Trend: KEV aggiunte negli ultimi {MESI_TREND} mesi</h2>
