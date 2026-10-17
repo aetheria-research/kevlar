@@ -1,12 +1,17 @@
 name: KEVlar Live
 
 # Rigenera la pagina pubblica dal catalogo CISA KEV e la pubblica su GitHub Pages.
-# Dato pubblico (nessun segreto). Trigger solo schedulato o manuale: mai l'evento
-# sulle pull request non fidate, che girerebbe con permessi elevati sul codice di
-# una PR esterna.
+# Dato pubblico (nessun segreto). Trigger: push su main (codice gia' fidato, che
+# e' passato da una PR), schedulato e manuale. MAI l'evento sulle pull request non
+# fidate, che girerebbe con permessi elevati sul codice di una PR esterna.
 on:
+  push:
+    branches: [main]
+    paths:                 # ri-pubblica solo se cambia il generatore o il workflow
+      - "kevlar.py"
+      - ".github/workflows/kevlar-live.yml"
   schedule:
-    - cron: "0 6 * * 1"   # ogni lunedi' alle 06:00 UTC
+    - cron: "0 6 * * 1"    # ogni lunedi' alle 06:00 UTC (dato CISA fresco)
   workflow_dispatch: {}    # lancio a mano dalla tab Actions
 
 # Permessi minimi: leggere il repo + pubblicare su Pages via OIDC. Niente altro.
