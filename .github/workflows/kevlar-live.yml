@@ -27,14 +27,14 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      # NB sicurezza: le action sono pinnate al TAG di major. Per l'indurimento
-      # massimo si pinnano all'hash di commit completo (e si lascia fare a
-      # Dependabot). Sono tutte action ufficiali GitHub, nessuna di terzi.
+      # NB sicurezza: solo action ufficiali GitHub, pinnate al major. Versioni su
+      # Node 24. Dependabot (.github/dependabot.yml) le tiene aggiornate da solo
+      # e puo' pinnarle all'hash di commit per l'indurimento massimo.
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -42,10 +42,10 @@ jobs:
         run: python kevlar.py --out public --html public/index.html
 
       - name: Upload artifact Pages
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: public
 
       - name: Deploy su GitHub Pages
         id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
