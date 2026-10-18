@@ -46,13 +46,26 @@ MESI_TREND = 12
 # Campione minimo di KEV per comparire nella classifica PER-TASSO: sotto questa
 # soglia un ratio (es. 2 KEV entrambe ransomware = 100%) e' rumore statistico.
 MIN_KEV_RATIO = 10
+# Il catalogo pesa ~2 MB: una risposta molto piu' grande non e' il catalogo atteso.
+MAX_BYTES_CATALOGO = 50 * 1024 * 1024
 
 
 def scarica_kev(url=CISA_KEV_URL, cache=CACHE_PATH, timeout=30):
-    """Scarica il catalogo CISA KEV (dato pubblico) in cache locale e ritorna il path."""
+    """Scarica il catalogo CISA KEV (dato pubblico) in cache locale e ritorna il path.
+    Lo valida PRIMA di sovrascrivere la cache: una risposta anomala (pagina
+    d'errore, file troncato o enorme) solleva ValueError e la cache buona resta."""
     req = urllib.request.Request(url, headers={"User-Agent": "KEVlar"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
-        dati = r.read()
+        dati = r.read(MAX_BYTES_CATALOGO + 1)
+    if len(dati) > MAX_BYTES_CATALOGO:
+        raise ValueError(f"risposta oltre {MAX_BYTES_CATALOGO} byte: non e' il catalogo atteso")
+    try:
+        vulns, _ = _estrai_kev(json.loads(dati))
+    except ValueError:
+        vulns = []
+    if not vulns:
+        raise ValueError("il download non contiene vulnerabilita' "
+                         "(pagina d'errore o formato del catalogo cambiato?)")
     Path(cache).write_bytes(dati)
     return Path(cache)
 
@@ -64,16 +77,29 @@ def _campo(v, *nomi):
     return ""
 
 
+def _estrai_kev(kev):
+    """(vulnerabilita, versione) da un catalogo gia' decodificato. Robusto al
+    formato: lista nuda o dict CISA; qualunque altra forma (numero, stringa,
+    campo non-lista, voci non-dict) non fa crashare, conta come nessun dato."""
+    if isinstance(kev, list):
+        vulns, ver = kev, "?"
+    elif isinstance(kev, dict):
+        vulns = kev.get("vulnerabilities") or kev.get("cves") or []
+        ver = kev.get("catalogVersion", "?")
+    else:
+        return [], "?"
+    if not isinstance(vulns, list):
+        return [], "?"
+    return [v for v in vulns if isinstance(v, dict)], str(ver)
+
+
 def carica_kev(path):
     """Ritorna (lista_vulnerabilita, versione_catalogo). Robusto al formato."""
     try:
         kev = json.loads(Path(path).read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except (OSError, ValueError):  # include JSON e UTF-8 non validi
         return [], "?"
-    if isinstance(kev, list):
-        return kev, "?"
-    vulns = kev.get("vulnerabilities") or kev.get("cves") or []
-    return vulns, kev.get("catalogVersion", "?")
+    return _estrai_kev(kev)
 
 
 def aggrega_vendor(vulns, oggi=None, mesi_trend=MESI_TREND):
@@ -339,6 +365,19 @@ _JS_FILTRO_BODY = (
 )
 
 
+def _json_per_script(obj):
+    """JSON da incorporare in <script>: '<', '>' e '&' diventano \\u003c, \\u003e,
+    \\u0026 (stessa stringa per JS, invisibili al parser HTML). Cosi' un nome
+    vendor non puo' chiudere il tag ("</script>") ne' mandare il parser nello
+    stato "double escaped" ("<!--<script>"), che inghiottiva il tag di chiusura,
+    rompeva l'hash CSP e spegneva il filtro. Escapati anche U+2028/U+2029."""
+    s = json.dumps(obj, ensure_ascii=False)
+    for car, esc in (("<", "\\u003c"), (">", "\\u003e"), ("&", "\\u0026"),
+                     (" ", "\\u2028"), (" ", "\\u2029")):
+        s = s.replace(car, esc)
+    return s
+
+
 def genera_html(agg, catalog_version="?", oggi=None, top=15) -> str:
     """Pagina HTML self-contained (stessi dati di genera_report). Niente build,
     niente dipendenze: pronta per GitHub Pages."""
@@ -367,12 +406,9 @@ def genera_html(agg, catalog_version="?", oggi=None, top=15) -> str:
     # ricalcola da solo. Niente 'unsafe-inline' per gli script.
     kev_lista = [[vd, d["kev"], _pct(d)]
                  for vd, d in sorted(agg.items(), key=lambda kv: -kv[1]["kev"])]
-    script = ("(function(){var K=" + json.dumps(kev_lista, ensure_ascii=False)
+    script = ("(function(){var K=" + _json_per_script(kev_lista)
               + ";" + _JS_FILTRO_BODY + "})();")
-    # Se un nome vendor contenesse "</script>" chiuderebbe il tag in anticipo:
-    # "<\/" e' equivalente in JS e innocuo nell'HTML. L'hash si calcola DOPO,
-    # sul testo esatto che finisce nella pagina.
-    script = script.replace("</", "<\\/")
+    # L'hash si calcola DOPO, sul testo esatto che finisce nella pagina.
     sha = base64.b64encode(hashlib.sha256(script.encode("utf-8")).digest()).decode()
     csp = ("default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-"
            + sha + "'; object-src 'none'; base-uri 'none'; form-action 'none'")
@@ -541,6 +577,11 @@ def scrivi_report(path_kev, output_dir=OUTPUT_DIR, oggi=None, html_path=None):
     percorso HTML (default: <output_dir>/index.html, comodo per GitHub Pages)."""
     oggi = oggi or datetime.date.today()
     vulns, ver = carica_kev(path_kev)
+    if not vulns:
+        # Meglio fallire che pubblicare una dashboard a zero: il workflow si
+        # ferma, online resta la pagina buona e GitHub manda la mail d'errore.
+        raise ValueError(f"catalogo vuoto o illeggibile ({path_kev}): "
+                         "non genero una pagina vuota")
     agg = aggrega_vendor(vulns, oggi=oggi)
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -565,7 +606,13 @@ def main():
     ap.add_argument("--no-download", action="store_true",
                     help="non scaricare: usa la cache locale se presente")
     args = ap.parse_args()
+    try:
+        _esegui(args)
+    except (OSError, ValueError) as e:  # rete, file, catalogo anomalo
+        raise SystemExit(f"KEVlar: {e}")  # messaggio chiaro, exit code 1
 
+
+def _esegui(args):
     if args.file:
         kev_path = Path(args.file)
     elif args.no_download and CACHE_PATH.exists():

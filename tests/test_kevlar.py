@@ -86,6 +86,67 @@ def test_carica_kev_file_mancante(tmp_path):
     assert ver == "?"
 
 
+def test_carica_kev_formati_anomali_non_crashano(tmp_path):
+    p = tmp_path / "kev.json"
+    for contenuto in ['123', '"testo"', '{"vulnerabilities": "non-lista"}',
+                      '<html>Service Unavailable</html>']:
+        p.write_text(contenuto, encoding="utf-8")
+        assert kv.carica_kev(p) == ([], "?"), contenuto
+    p.write_bytes(b"\xff\xfe\x00 non utf-8")
+    assert kv.carica_kev(p) == ([], "?")
+    p.write_text(json.dumps([_kev("X"), "voce-non-dict", 7]), encoding="utf-8")
+    vulns, _ = kv.carica_kev(p)
+    assert len(vulns) == 1                       # tenute solo le voci dict
+
+
+class _RispostaFinta:
+    """Sostituto di urlopen: niente rete nei test."""
+    def __init__(self, dati):
+        self.dati = dati
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+    def read(self, n=-1):
+        return self.dati if n < 0 else self.dati[:n]
+
+
+def test_scarica_kev_risposta_anomala_non_tocca_la_cache(tmp_path, monkeypatch):
+    cache = tmp_path / "cache.json"
+    cache.write_text("CACHE BUONA", encoding="utf-8")
+    monkeypatch.setattr(kv.urllib.request, "urlopen",
+                        lambda req, timeout: _RispostaFinta(b"<html>Errore 503</html>"))
+    try:
+        kv.scarica_kev(cache=cache)
+        assert False, "doveva rifiutare la risposta"
+    except ValueError:
+        pass
+    assert cache.read_text(encoding="utf-8") == "CACHE BUONA"
+
+
+def test_scarica_kev_risposta_troppo_grande(tmp_path, monkeypatch):
+    monkeypatch.setattr(kv, "MAX_BYTES_CATALOGO", 10)
+    monkeypatch.setattr(kv.urllib.request, "urlopen",
+                        lambda req, timeout: _RispostaFinta(b"x" * 100))
+    try:
+        kv.scarica_kev(cache=tmp_path / "cache.json")
+        assert False, "doveva rifiutare la risposta"
+    except ValueError:
+        pass
+    assert not (tmp_path / "cache.json").exists()
+
+
+def test_scarica_kev_risposta_valida_scrive_la_cache(tmp_path, monkeypatch):
+    buono = json.dumps({"catalogVersion": "2026.10", "vulnerabilities": [_kev("X")]})
+    monkeypatch.setattr(kv.urllib.request, "urlopen",
+                        lambda req, timeout: _RispostaFinta(buono.encode("utf-8")))
+    cache = kv.scarica_kev(cache=tmp_path / "cache.json")
+    assert kv.carica_kev(cache)[1] == "2026.10"
+
+
 def test_genera_report_contiene_sezioni_e_disclaimer():
     vulns = [_kev("BigCo", ransomware=(i < 5)) for i in range(12)]
     agg = kv.aggrega_vendor(vulns, oggi=OGGI)
@@ -184,6 +245,25 @@ def test_genera_html_csp_hash_combacia_con_lo_script():
     assert ("sha256-" + h) in html, "l'hash CSP non combacia con lo script"
 
 
+def test_script_filtro_resiste_a_nomi_vendor_malevoli():
+    # Caso reale trovato nel test di sicurezza: "<!--<script>" mandava il parser
+    # HTML nello stato "double escaped", il tag di chiusura veniva inghiottito,
+    # l'hash CSP non combaciava piu' e il filtro si spegneva in silenzio.
+    import re
+    import hashlib
+    import base64
+    nomi = ["<!--<script>", "</script><script>alert(1)</script>", "a&b>c", "x y"]
+    vulns = [_kev(n, ransomware=True) for n in nomi for _ in range(10)]
+    html = kv.genera_html(kv.aggrega_vendor(vulns, oggi=OGGI), oggi=OGGI)
+    assert html.count("<script") == 1 and html.count("</script>") == 1
+    corpo = re.search(r"<script>(.*?)</script>", html, re.S).group(1)
+    assert "<" not in corpo.split(";")[0]        # nei dati nessun '<' grezzo
+    h = base64.b64encode(hashlib.sha256(corpo.encode("utf-8")).digest()).decode()
+    assert ("sha256-" + h) in html               # la CSP lascia partire lo script
+    dati = json.loads(corpo[len("(function(){var K="):corpo.index(";")])
+    assert sorted(d[0] for d in dati) == sorted(nomi)   # i nomi tornano identici
+
+
 def test_genera_html_input_indurito():
     # Difesa in profondita' sull'input del filtro: lunghezza + numero termini +
     # allowlist dei caratteri; CSP senza plugin/embed.
@@ -214,6 +294,19 @@ def test_scrivi_report_emette_md_json_e_html(tmp_path):
     assert out.exists()                                        # .md
     assert (tmp_path / "o" / "vendor_risk_latest.json").exists()
     assert (tmp_path / "o" / "index.html").exists()            # NUOVO
+
+
+def test_scrivi_report_rifiuta_catalogo_vuoto(tmp_path):
+    # Una pagina d'errore al posto del catalogo NON deve diventare una
+    # dashboard a zero pubblicata al posto di quella buona.
+    p = tmp_path / "kev.json"
+    p.write_text("<html>Service Unavailable</html>", encoding="utf-8")
+    try:
+        kv.scrivi_report(p, output_dir=tmp_path / "o", oggi=OGGI)
+        assert False, "doveva rifiutare il catalogo vuoto"
+    except ValueError:
+        pass
+    assert not (tmp_path / "o" / "index.html").exists()
 
 
 def test_scrivi_report_rispetta_html_path(tmp_path):
