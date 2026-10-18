@@ -220,6 +220,46 @@ def test_genera_html_include_il_grafico():
     assert "kev-bar" in html and "<svg" in html
 
 
+def test_aggrega_conta_ransomware_per_prodotto_e_ripulisce_spazi():
+    vulns = [_kev("QNAP", product="QTS", ransomware=True),
+             _kev("QNAP", product="  QTS ", ransomware=False),       # spazi di troppo
+             _kev("QNAP", product="Photo  Station", ransomware=True)]
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    assert agg["QNAP"]["prodotti"] == {"QTS": 2, "Photo Station": 1}
+    assert agg["QNAP"]["prodotti_ransomware"] == {"QTS": 1, "Photo Station": 1}
+
+
+def test_prodotti_vendor_ordina_e_raggruppa_il_resto():
+    vulns = [_kev("MegaCo", product=f"P{i:02}") for i in range(12)]
+    vulns += [_kev("MegaCo", product="P00", ransomware=True)]
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    righe, resto = kv._prodotti_vendor(agg["MegaCo"], top=10)
+    assert righe[0] == ("P00", 2, 1)     # piu' KEV in cima
+    assert len(righe) == 10
+    assert resto == (2, 2, 0)            # 2 prodotti oltre il taglio: 2 KEV, 0 ransomware
+
+
+def test_genera_html_dettaglio_prodotti():
+    vulns = [_kev("NasCo", product="Photo Station", ransomware=True) for _ in range(4)]
+    vulns += [_kev("NasCo", product="QTS", ransomware=(i < 5)) for i in range(7)]
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    html = kv.genera_html(agg, oggi=OGGI)
+    assert 'id="prodotti"' in html and 'href="#prodotti"' in html
+    assert '<details class="kp">' in html
+    assert "<td>QTS</td><td>7</td><td>5</td>" in html
+    assert "per lo piu&#39; QTS" in html     # 7 KEV su 11 -> prodotto dominante
+    assert html.count("<script") == 1       # nessun JS nuovo: la CSP resta com'era
+
+
+def test_dettaglio_prodotti_escape_nomi_prodotto():
+    # Anche i nomi prodotto vengono da dato esterno: escapizzati, non iniettati.
+    vulns = [_kev("X", product="<img src=x onerror=alert(1)>", ransomware=True)
+             for _ in range(10)]
+    html = kv.genera_html(kv.aggrega_vendor(vulns, oggi=OGGI), oggi=OGGI)
+    assert "<img" not in html
+    assert "&lt;img src=x onerror=alert(1)&gt;" in html
+
+
 def test_genera_html_csp_script_solo_via_hash():
     # Pagina pubblica: CSP restrittiva; lo script del filtro e' permesso SOLO
     # tramite il suo hash sha256, mai con 'unsafe-inline'.

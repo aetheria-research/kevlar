@@ -104,18 +104,25 @@ def carica_kev(path):
 
 def aggrega_vendor(vulns, oggi=None, mesi_trend=MESI_TREND):
     """Per ogni vendor: kev totali, ransomware-linked, recenti (ultimi N mesi),
-    ratio ransomware/kev, prodotti. Ritorna {vendor: {...}}."""
+    ratio ransomware/kev, prodotti (KEV e ransomware per prodotto). Ritorna
+    {vendor: {...}}."""
     oggi = oggi or datetime.date.today()
     soglia_giorni = mesi_trend * 30
     agg = {}
     for v in vulns:
         vd = _campo(v, "vendorProject", "vendor") or "?"
         d = agg.setdefault(vd, {"kev": 0, "ransomware": 0, "recenti": 0,
-                                "prodotti": collections.Counter()})
+                                "prodotti": collections.Counter(),
+                                "prodotti_ransomware": collections.Counter()})
+        # Nome prodotto come lo scrive CISA, solo con gli spazi ripuliti (ce ne
+        # sono di iniziali/doppi). Nessuna unificazione delle varianti: sarebbe
+        # un'interpretazione, non il dato.
+        prodotto = " ".join(str(_campo(v, "product")).split()) or "?"
         d["kev"] += 1
-        d["prodotti"][_campo(v, "product") or "?"] += 1
+        d["prodotti"][prodotto] += 1
         if str(_campo(v, "knownRansomwareCampaignUse")).lower() == "known":
             d["ransomware"] += 1
+            d["prodotti_ransomware"][prodotto] += 1
         da = _campo(v, "dateAdded")
         try:
             if (oggi - datetime.date.fromisoformat(str(da)[:10])).days <= soglia_giorni:
@@ -151,6 +158,31 @@ def _pct(d):
     conteggi interi. UNICO arrotondamento per tabelle, grafico, filtro e --stack:
     prima le tabelle troncavano (9/11 -> 81%) e il grafico arrotondava (82%)."""
     return (200 * d["ransomware"] + d["kev"]) // (2 * d["kev"]) if d["kev"] else 0
+
+
+def _nota_prodotto(d):
+    """'tutte su X' / "per lo piu' X" se un prodotto domina le KEV del vendor,
+    altrimenti ''. Cosi' "JetBrains 100%" si legge "tutte su TeamCity"."""
+    if not d.get("prodotti"):
+        return ""
+    pn, pc = d["prodotti"].most_common(1)[0]
+    if pc == d["kev"]:
+        return f"tutte su {pn}"
+    if pc >= d["kev"] * 0.6:
+        return f"per lo piu' {pn}"
+    return ""
+
+
+def _prodotti_vendor(d, top=10):
+    """Prodotti del vendor per numero di KEV (a parita', per ransomware):
+    ([(prodotto, kev, ransomware), ...] i primi `top`, resto) dove resto e'
+    (n_prodotti, kev, ransomware) di quelli oltre il taglio, o None."""
+    rw = d.get("prodotti_ransomware", {})
+    righe = sorted(((p, n, rw.get(p, 0)) for p, n in d.get("prodotti", {}).items()),
+                   key=lambda r: (-r[1], -r[2], r[0]))
+    oltre = righe[top:]
+    resto = (len(oltre), sum(r[1] for r in oltre), sum(r[2] for r in oltre)) if oltre else None
+    return righe[:top], resto
 
 
 def _tabella(righe, intestazione):
@@ -284,6 +316,31 @@ def _grafico_tasso_svg(agg, top=12, min_kev=MIN_KEV_RATIO):
     return f'<figure class="kev-fig">{"".join(p)}</figure>'
 
 
+def _dettaglio_prodotti_html(agg, top=15, top_prodotti=10):
+    """Un <details> per ogni vendor delle classifiche (per ransomware e per
+    tasso): dentro, i suoi prodotti con KEV e ransomware. Elemento HTML nativo,
+    si apre al clic senza JS -> la CSP resta com'e'. Per prodotto solo conteggi,
+    niente percentuali: su 1-4 KEV un tasso sarebbe rumore."""
+    scelti = dict(classifica_ransomware(agg, top))
+    scelti.update(classifica_tasso(agg, top=top))
+    ordinati = sorted(scelti.items(), key=lambda kv: (kv[1]["ransomware"], kv[1]["kev"]),
+                      reverse=True)
+    blocchi = []
+    for vd, d in ordinati:
+        righe, resto = _prodotti_vendor(d, top_prodotti)
+        if resto:
+            righe = righe + [(f"altri {resto[0]} prodotti", resto[1], resto[2])]
+        meta = [f"{d['kev']} KEV", f"{_pct(d)}% ransomware",
+                _nota_prodotto(d) or f"{len(d.get('prodotti', {}))} prodotti"]
+        if d["kev"] < MIN_KEV_RATIO:
+            meta.append("campione piccolo")
+        tabella = _tabella_html(righe, ["Prodotto (nome CISA)", "KEV", "Ransomware"])
+        blocchi.append(f'<details class="kp"><summary><strong>{_esc(vd)}</strong> '
+                       f'<span class="kp-meta">{" &middot; ".join(_esc(m) for m in meta)}'
+                       f'</span></summary>\n{tabella}\n</details>')
+    return "\n".join(blocchi)
+
+
 # CSS in costante a parte: stringa normale (parentesi letterali, niente doubling
 # nelle f-string). Token su :root + override dark via prefers-color-scheme.
 _HTML_CSS = """
@@ -332,6 +389,13 @@ a { color:var(--accent); }
 .kv-out { margin:10px 0 2px; font-size:.95rem; }
 .kv-out ul { margin:6px 0; padding-left:20px; }
 .kv-out li { margin:2px 0; }
+details.kp { background:var(--card); border:1px solid var(--bordo); border-radius:10px;
+  margin:8px 0; }
+details.kp > summary { cursor:pointer; padding:10px 14px; }
+details.kp[open] > summary { border-bottom:1px solid var(--bordo); }
+.kp-meta { color:var(--muted); font-size:.92rem; }
+details.kp .tw { padding:4px 8px 8px; }
+details.kp table { border:0; margin:0; }
 """
 
 
@@ -398,6 +462,18 @@ def genera_html(agg, catalog_version="?", oggi=None, top=15) -> str:
         [(vd, d["recenti"], d["kev"]) for vd, d in classifica_recenti(agg, top)],
         ["Vendor", f"Ultimi {MESI_TREND}m", "KEV totali"])
     grafico = _grafico_tasso_svg(agg, top)
+    prodotti = _dettaglio_prodotti_html(agg, top)
+    sezione_prodotti = f"""
+<h2 id="prodotti">4. Dentro i vendor: quali prodotti</h2>
+<p class="sotto">Apri un vendor per vedere su quali prodotti cadono le sue KEV. Un tasso alto
+concentrato su un solo prodotto e' un "verifica QUEL prodotto, se lo esponi", non un
+giudizio sul vendor.</p>
+{prodotti}
+<p class="note">Nomi dei prodotti come li scrive CISA: lo stesso prodotto puo' comparire con
+varianti (es. "Confluence Server" e "Confluence Data Center and Server"). Per prodotto
+solo i conteggi, non un tasso: su poche falle una percentuale sarebbe rumore.</p>
+""" if prodotti else ""
+    link_prodotti = '<a href="#prodotti">Su quali prodotti?</a>' if prodotti else ""
 
     # Riquadro "Ti riguarda?": tutti i vendor (non solo i top) finiscono in un
     # array JS, cosi' il filtro risponde per qualunque vendor l'utente digiti,
@@ -456,7 +532,8 @@ e il tasso ransomware medio del tuo stack.</p>
 CISA: e' un buon segno, non una prova di sicurezza.</p>
 
 <h2>1. Weaponizzazione ransomware (segnale principale)</h2>
-<p class="sotto">Vendor le cui KEV sfruttate finiscono piu' spesso in campagne ransomware.</p>
+<p class="sotto">Vendor le cui KEV sfruttate finiscono piu' spesso in campagne ransomware.
+{link_prodotti}</p>
 {t1}
 
 <h2>2. Tasso di weaponizzazione (campione &ge; {MIN_KEV_RATIO} KEV)</h2>
@@ -467,7 +544,7 @@ CISA: e' un buon segno, non una prova di sicurezza.</p>
 <h2>3. Trend: KEV aggiunte negli ultimi {MESI_TREND} mesi</h2>
 <p class="sotto">Chi "scotta" ora.</p>
 {t3}
-
+{sezione_prodotti}
 <footer>
 <p class="note">Dati dal catalogo <strong>pubblico</strong> CISA KEV: una fotografia
 alla data del catalogo. Il tasso di weaponizzazione e' <strong>una lente</strong> per
@@ -541,13 +618,8 @@ def report_stack(ris) -> str:
            f"(tasso ransomware medio {int(round(ris['tasso_medio'] * 100))}%)."]
     piccoli = 0
     for _, vd, d in sorted(ris["trovati"], key=lambda x: -x[2]["ratio"]):
-        pezzo = ""
-        if d.get("prodotti"):
-            pn, pc = d["prodotti"].most_common(1)[0]
-            if pc == d["kev"]:
-                pezzo = f" - tutte su {pn}"
-            elif pc >= d["kev"] * 0.6:
-                pezzo = f" - per lo piu' {pn}"
+        dominante = _nota_prodotto(d)
+        pezzo = f" - {dominante}" if dominante else ""
         nota = ""
         if d["kev"] < MIN_KEV_RATIO:
             piccoli += 1
