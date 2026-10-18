@@ -120,6 +120,13 @@ def classifica_recenti(agg, top=15):
     return [(vd, d) for vd, d in ordinati[:top] if d["recenti"] > 0]
 
 
+def _pct(d):
+    """Tasso ransomware in percentuale intera, arrotondato (mezzo in su) dai
+    conteggi interi. UNICO arrotondamento per tabelle, grafico, filtro e --stack:
+    prima le tabelle troncavano (9/11 -> 81%) e il grafico arrotondava (82%)."""
+    return (200 * d["ransomware"] + d["kev"]) // (2 * d["kev"]) if d["kev"] else 0
+
+
 def _tabella(righe, intestazione):
     out = ["| " + " | ".join(intestazione) + " |",
            "|" + "|".join([" --- "] * len(intestazione)) + "|"]
@@ -135,12 +142,12 @@ def genera_report(agg, catalog_version="?", oggi=None, top=15) -> str:
     perc = int(round(tot_ransom / totale * 100)) if totale else 0
 
     t1 = _tabella(
-        [(vd, d["kev"], d["ransomware"], f"{int(d['ratio'] * 100)}%", d["recenti"])
+        [(vd, d["kev"], d["ransomware"], f"{_pct(d)}%", d["recenti"])
          for vd, d in classifica_ransomware(agg, top)],
         ["Vendor", "KEV", "Ransomware", "Tasso", f"Ultimi {MESI_TREND}m"])
 
     t2 = _tabella(
-        [(vd, d["kev"], f"{int(d['ratio'] * 100)}%")
+        [(vd, d["kev"], f"{_pct(d)}%")
          for vd, d in classifica_tasso(agg, top=top)],
         ["Vendor", "KEV", "Tasso ransomware"])
 
@@ -238,7 +245,7 @@ def _grafico_tasso_svg(agg, top=12, min_kev=MIN_KEV_RATIO):
     y = top_m
     for vd, d in righe:
         bw = max((x1 - x0) * d["ratio"], 2)
-        pct = int(round(d["ratio"] * 100))
+        pct = _pct(d)
         cy = y + barH / 2 + 4
         p.append(f'<g><title>{_esc(vd)}: {pct}% ({d["ransomware"]}/{d["kev"]} KEV)</title>'
                  f'<text class="kev-lab" x="{x_lab}" y="{cy:.1f}" text-anchor="end">'
@@ -341,11 +348,11 @@ def genera_html(agg, catalog_version="?", oggi=None, top=15) -> str:
     perc = int(round(tot_ransom / totale * 100)) if totale else 0
 
     t1 = _tabella_html(
-        [(vd, d["kev"], d["ransomware"], f"{int(d['ratio'] * 100)}%", d["recenti"])
+        [(vd, d["kev"], d["ransomware"], f"{_pct(d)}%", d["recenti"])
          for vd, d in classifica_ransomware(agg, top)],
         ["Vendor", "KEV", "Ransomware", "Tasso", f"Ultimi {MESI_TREND}m"])
     t2 = _tabella_html(
-        [(vd, d["kev"], f"{int(d['ratio'] * 100)}%")
+        [(vd, d["kev"], f"{_pct(d)}%")
          for vd, d in classifica_tasso(agg, top=top)],
         ["Vendor", "KEV", "Tasso ransomware"])
     t3 = _tabella_html(
@@ -358,7 +365,7 @@ def genera_html(agg, catalog_version="?", oggi=None, top=15) -> str:
     # anche quelli assenti dal KEV. Lo script e' permesso in CSP SOLO col suo
     # hash sha256, calcolato qui sul testo esatto (dati inclusi): se cambia, si
     # ricalcola da solo. Niente 'unsafe-inline' per gli script.
-    kev_lista = [[vd, d["kev"], int(round(d["ratio"] * 100))]
+    kev_lista = [[vd, d["kev"], _pct(d)]
                  for vd, d in sorted(agg.items(), key=lambda kv: -kv[1]["kev"])]
     script = ("(function(){var K=" + json.dumps(kev_lista, ensure_ascii=False)
               + ";" + _JS_FILTRO_BODY + "})();")
@@ -509,7 +516,7 @@ def report_stack(ris) -> str:
         if d["kev"] < MIN_KEV_RATIO:
             piccoli += 1
             nota = f"  [campione piccolo: {d['kev']} KEV, tasso poco significativo]"
-        out.append(f"  [{int(round(d['ratio'] * 100)):>3}%] {vd}{pezzo}  "
+        out.append(f"  [{_pct(d):>3}%] {vd}{pezzo}  "
                    f"({d['ransomware']}/{d['kev']} KEV armate){nota}")
     if piccoli:
         out.append(f"  Nota: {piccoli} con meno di {MIN_KEV_RATIO} KEV. Un tasso su "

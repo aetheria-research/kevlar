@@ -126,6 +126,25 @@ def test_grafico_tasso_svg_barre_e_valori():
     assert "<script" not in svg.lower()  # niente JS: CSP resta chiusa
 
 
+def test_pct_arrotonda_dai_conteggi():
+    assert kv._pct({"kev": 11, "ransomware": 9}) == 82   # 81,8%: non troncato a 81
+    assert kv._pct({"kev": 8, "ransomware": 1}) == 13    # 12,5%: mezzo in su
+    assert kv._pct({"kev": 0, "ransomware": 0}) == 0     # niente divisione per zero
+
+
+def test_stesso_tasso_in_tabelle_grafico_e_filtro():
+    # 9/11 = 81,8%: prima le tabelle dicevano 81% e il grafico 82% sulla stessa
+    # pagina. Ora tabelle, grafico, filtro e report Markdown dicono tutti 82%.
+    vulns = [_kev("NasCo", ransomware=(i < 9)) for i in range(11)]
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    html = kv.genera_html(agg, oggi=OGGI)
+    assert "<td>82%</td>" in html            # tabelle
+    assert "NasCo: 82%" in html              # grafico (tooltip)
+    assert '["NasCo", 11, 82]' in html       # dati del filtro "ti riguarda?"
+    assert "81%" not in html
+    assert "| 82% |" in kv.genera_report(agg, oggi=OGGI)
+
+
 def test_grafico_tasso_svg_vuoto_se_nessun_campione():
     # solo campioni sotto soglia -> nessuna barra, stringa vuota, pagina regge
     vulns = [_kev("SmallCo", ransomware=True) for _ in range(3)]
