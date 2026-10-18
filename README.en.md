@@ -21,13 +21,13 @@ A small tool that answers a practical question: *looking at the flaws actually e
 
 The instinctive way to measure "vendor risk" is to count how many exploited vulnerabilities (KEVs) each one has. But that's a **popularity trap**: ubiquitous products sit at the top only because they're everywhere and more heavily scrutinized — not because they're the worst.
 
-The real data makes it obvious:
+The real data (CISA KEV catalog of 2026-10-16) makes it obvious:
 
 | Vendor | Exploited KEVs | Weaponized by ransomware |
 |---|---:|---:|
-| Microsoft | 389 | 30% |
-| Cisco | 99 | 7% |
-| Apple | 94 | **0%** |
+| Microsoft | 390 | 30% |
+| Cisco | 101 | 7% |
+| Apple | 95 | **0%** |
 | Adobe | 82 | 13% |
 | Google | 75 | **0%** |
 
@@ -39,11 +39,13 @@ The useful signal is the **ratio** between a vendor's ransomware-weaponized KEVs
 
 | Vendor | KEVs | Ransomware rate |
 |---|---:|---:|
-| QNAP | 11 | **81%** |
+| QNAP | 11 | **82%** |
 | SonicWall | 19 | 68% |
-| Atlassian | 13 | 61% |
-| Fortinet | 30 | 46% |
-| Palo Alto Networks | 15 | 40% |
+| Atlassian | 14 | 57% |
+| Fortinet | 32 | 44% |
+| Palo Alto Networks | 16 | 38% |
+
+*The numbers above are a snapshot as of 2026-10-16. The weekly-updated ones are on the [live dashboard](https://aetheria-research.github.io/kevlar/).*
 
 A clear cluster emerges: **edge / appliance** (NAS, firewalls, VPNs, gateways) — exactly the entry point ransomware operators prefer. An *actionable* result: it tells you what to patch first and what to weigh more carefully upstream.
 

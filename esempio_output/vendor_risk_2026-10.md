@@ -2,9 +2,9 @@
 
 # KEVlar - Vendor Risk Report (2026-10)
 
-Fonte: **CISA KEV** (Known Exploited Vulnerabilities), catalogo 2026.09.30.
-Vulnerabilita' sfruttate nel wild: **1730** (di cui armate dal ransomware:
-**361**, il 21%). Vendor distinti: 283.
+Fonte: **CISA KEV** (Known Exploited Vulnerabilities), catalogo 2026.10.16.
+Vulnerabilita' sfruttate nel wild: **1748** (di cui armate dal ransomware:
+**361**, il 21%). Vendor distinti: 289.
 
 > **Come leggerlo.** Il numero di KEV da solo e' fuorviante: i prodotti ubiqui
 > (Windows, Chrome, Linux) sono in cima perche' piu' usati e scrutinati, non
@@ -18,20 +18,20 @@ Vendor le cui KEV sfruttate finiscono piu' spesso in campagne ransomware.
 
 | Vendor | KEV | Ransomware | Tasso | Ultimi 12m |
 | --- | --- | --- | --- | --- |
-| Microsoft | 389 | 117 | 30% | 49 |
-| Fortinet | 30 | 14 | 46% | 10 |
-| Oracle | 46 | 13 | 28% | 7 |
+| Microsoft | 390 | 117 | 30% | 43 |
+| Fortinet | 32 | 14 | 44% | 12 |
+| Oracle | 46 | 13 | 28% | 5 |
 | SonicWall | 19 | 13 | 68% | 5 |
-| Ivanti | 35 | 12 | 34% | 5 |
-| Adobe | 82 | 11 | 13% | 8 |
-| VMware | 26 | 9 | 34% | 0 |
-| QNAP | 11 | 9 | 81% | 0 |
-| Apache | 40 | 8 | 20% | 2 |
-| Atlassian | 13 | 8 | 61% | 0 |
-| Cisco | 100 | 7 | 7% | 19 |
-| Citrix | 26 | 7 | 26% | 5 |
-| Synacor | 19 | 6 | 31% | 6 |
-| Palo Alto Networks | 15 | 6 | 40% | 2 |
+| Ivanti | 36 | 12 | 33% | 6 |
+| Adobe | 82 | 11 | 13% | 7 |
+| VMware | 26 | 9 | 35% | 0 |
+| QNAP | 11 | 9 | 82% | 0 |
+| Apache | 41 | 8 | 20% | 3 |
+| Atlassian | 14 | 8 | 57% | 1 |
+| Cisco | 101 | 7 | 7% | 20 |
+| Citrix | 27 | 7 | 26% | 6 |
+| Synacor | 19 | 6 | 32% | 5 |
+| Palo Alto Networks | 16 | 6 | 38% | 3 |
 | Mitel | 7 | 5 | 71% | 0 |
 
 ## 2. Tasso di weaponizzazione (campione >= 10 KEV)
@@ -39,19 +39,19 @@ Il cluster "pensaci due volte / patcha aggressivo" - spesso edge/appliance.
 
 | Vendor | KEV | Tasso ransomware |
 | --- | --- | --- |
-| QNAP | 11 | 81% |
+| QNAP | 11 | 82% |
 | SonicWall | 19 | 68% |
-| Atlassian | 13 | 61% |
-| Fortinet | 30 | 46% |
-| Palo Alto Networks | 15 | 40% |
-| VMware | 26 | 34% |
-| Ivanti | 35 | 34% |
-| Synacor | 19 | 31% |
-| Microsoft | 389 | 30% |
+| Atlassian | 14 | 57% |
+| Fortinet | 32 | 44% |
+| Palo Alto Networks | 16 | 38% |
+| VMware | 26 | 35% |
+| Ivanti | 36 | 33% |
+| Synacor | 19 | 32% |
+| Microsoft | 390 | 30% |
 | Oracle | 46 | 28% |
-| Citrix | 26 | 26% |
+| Citrix | 27 | 26% |
 | SAP | 14 | 21% |
-| Apache | 40 | 20% |
+| Apache | 41 | 20% |
 | SolarWinds | 11 | 18% |
 | Zyxel | 13 | 15% |
 
@@ -60,18 +60,18 @@ Chi "scotta" ora.
 
 | Vendor | Ultimi 12m | KEV totali |
 | --- | --- | --- |
-| Microsoft | 49 | 389 |
-| Cisco | 19 | 100 |
-| Apple | 11 | 95 |
+| Microsoft | 43 | 390 |
+| Cisco | 20 | 101 |
+| Fortinet | 12 | 32 |
+| Apple | 10 | 95 |
 | Google | 10 | 75 |
-| Fortinet | 10 | 30 |
-| Linux | 9 | 31 |
-| Adobe | 8 | 82 |
-| Oracle | 7 | 46 |
-| Synacor | 6 | 19 |
-| Citrix | 5 | 26 |
+| Linux | 8 | 31 |
+| Adobe | 7 | 82 |
+| Ivanti | 6 | 36 |
+| Citrix | 6 | 27 |
 | SonicWall | 5 | 19 |
-| Ivanti | 5 | 35 |
+| Oracle | 5 | 46 |
+| Synacor | 5 | 19 |
 | Check Point | 4 | 5 |
 | JFrog | 4 | 4 |
 | Broadcom | 4 | 5 |
