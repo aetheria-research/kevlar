@@ -1,6 +1,7 @@
 # KEVlar
 
 [![Live dashboard](https://img.shields.io/badge/dashboard-live-success)](https://aetheria-research.github.io/kevlar/)
+[![Test](https://github.com/aetheria-research/kevlar/actions/workflows/test.yml/badge.svg)](https://github.com/aetheria-research/kevlar/actions/workflows/test.yml)
 ![TLP:CLEAR](https://img.shields.io/badge/TLP-CLEAR-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
@@ -75,6 +76,8 @@ A real example is in [`esempio_output/`](esempio_output/). The online version is
 ```bash
 python -m pytest tests/ -q
 ```
+
+The same tests run automatically on every pull request ([`.github/workflows/test.yml`](.github/workflows/test.yml)): a PR lands on `main` only if they pass.
 
 ## What this project demonstrates
 
