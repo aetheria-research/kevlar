@@ -1,31 +1,122 @@
 {
-  "generato": "2026-10-01",
-  "catalog_version": "2026.09.30",
-  "totale_kev": 1730,
+  "generato": "2026-10-18",
+  "catalog_version": "2026.10.16",
+  "totale_kev": 1748,
   "tot_ransomware": 361,
   "mesi_trend": 12,
   "min_kev_ratio": 10,
   "vendor": [
     {
+      "vendor": "BeyondTrust",
+      "kev": 4,
+      "ransomware": 1,
+      "ratio": 0.25,
+      "recenti": 2
+    },
+    {
+      "vendor": "Fortinet",
+      "kev": 32,
+      "ransomware": 14,
+      "ratio": 0.438,
+      "recenti": 12
+    },
+    {
+      "vendor": "Atlassian",
+      "kev": 14,
+      "ransomware": 8,
+      "ratio": 0.571,
+      "recenti": 1
+    },
+    {
+      "vendor": "Ahsay",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 2
+    },
+    {
       "vendor": "Cisco",
-      "kev": 100,
+      "kev": 101,
       "ransomware": 7,
-      "ratio": 0.07,
-      "recenti": 19
+      "ratio": 0.069,
+      "recenti": 20
+    },
+    {
+      "vendor": "Palo Alto Networks",
+      "kev": 16,
+      "ransomware": 6,
+      "ratio": 0.375,
+      "recenti": 3
+    },
+    {
+      "vendor": "Ivanti",
+      "kev": 36,
+      "ransomware": 12,
+      "ratio": 0.333,
+      "recenti": 6
+    },
+    {
+      "vendor": "Microsoft",
+      "kev": 390,
+      "ransomware": 117,
+      "ratio": 0.3,
+      "recenti": 43
+    },
+    {
+      "vendor": "ISC",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Apache",
+      "kev": 41,
+      "ransomware": 8,
+      "ratio": 0.195,
+      "recenti": 3
+    },
+    {
+      "vendor": "Strapi",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "ONLYOFFICE",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "ProFTPD",
+      "kev": 1,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 1
+    },
+    {
+      "vendor": "Citrix",
+      "kev": 27,
+      "ransomware": 7,
+      "ratio": 0.259,
+      "recenti": 6
+    },
+    {
+      "vendor": "Zammad GmbH",
+      "kev": 2,
+      "ransomware": 0,
+      "ratio": 0.0,
+      "recenti": 2
     },
     {
       "vendor": "Apple",
       "kev": 95,
       "ransomware": 0,
       "ratio": 0.0,
-      "recenti": 11
-    },
-    {
-      "vendor": "Citrix",
-      "kev": 26,
-      "ransomware": 7,
-      "ratio": 0.269,
-      "recenti": 5
+      "recenti": 10
     },
     {
       "vendor": "MikroTik",
@@ -33,13 +124,6 @@
       "ransomware": 0,
       "ratio": 0.0,
       "recenti": 3
-    },
-    {
-      "vendor": "Microsoft",
-      "kev": 389,
-      "ransomware": 117,
-      "ratio": 0.301,
-      "recenti": 49
     },
     {
       "vendor": "WordPress",
@@ -60,7 +144,7 @@
       "kev": 82,
       "ransomware": 11,
       "ratio": 0.134,
-      "recenti": 8
+      "recenti": 7
     },
     {
       "vendor": "Arista",
@@ -95,7 +179,7 @@
       "kev": 31,
       "ransomware": 2,
       "ratio": 0.065,
-      "recenti": 9
+      "recenti": 8
     },
     {
       "vendor": "Google",
@@ -131,13 +215,6 @@
       "ransomware": 1,
       "ratio": 0.2,
       "recenti": 3
-    },
-    {
-      "vendor": "Fortinet",
-      "kev": 30,
-      "ransomware": 14,
-      "ratio": 0.467,
-      "recenti": 10
     },
     {
       "vendor": "N-able",
@@ -221,14 +298,14 @@
       "kev": 46,
       "ransomware": 13,
       "ratio": 0.283,
-      "recenti": 7
+      "recenti": 5
     },
     {
       "vendor": "Synacor",
       "kev": 19,
       "ransomware": 6,
       "ratio": 0.316,
-      "recenti": 6
+      "recenti": 5
     },
     {
       "vendor": "TrueConf",
@@ -277,13 +354,6 @@
       "kev": 4,
       "ransomware": 4,
       "ratio": 1.0,
-      "recenti": 2
-    },
-    {
-      "vendor": "Apache",
-      "kev": 40,
-      "ransomware": 8,
-      "ratio": 0.2,
       "recenti": 2
     },
     {
@@ -392,13 +462,6 @@
       "recenti": 2
     },
     {
-      "vendor": "Ivanti",
-      "kev": 35,
-      "ransomware": 12,
-      "ratio": 0.343,
-      "recenti": 5
-    },
-    {
       "vendor": "SolarWinds",
       "kev": 11,
       "ransomware": 2,
@@ -418,13 +481,6 @@
       "ransomware": 0,
       "ratio": 0.0,
       "recenti": 3
-    },
-    {
-      "vendor": "Palo Alto Networks",
-      "kev": 15,
-      "ransomware": 6,
-      "ratio": 0.4,
-      "recenti": 2
     },
     {
       "vendor": "Nx",
@@ -494,7 +550,7 @@
       "kev": 4,
       "ransomware": 0,
       "ratio": 0.0,
-      "recenti": 3
+      "recenti": 1
     },
     {
       "vendor": "Quest",
@@ -592,13 +648,6 @@
       "kev": 1,
       "ransomware": 0,
       "ratio": 0.0,
-      "recenti": 1
-    },
-    {
-      "vendor": "BeyondTrust",
-      "kev": 3,
-      "ransomware": 1,
-      "ratio": 0.333,
       "recenti": 1
     },
     {
@@ -767,35 +816,35 @@
       "kev": 1,
       "ransomware": 0,
       "ratio": 0.0,
-      "recenti": 1
+      "recenti": 0
     },
     {
       "vendor": "IGEL",
       "kev": 1,
       "ransomware": 0,
       "ratio": 0.0,
-      "recenti": 1
+      "recenti": 0
     },
     {
       "vendor": "SKYSEA",
       "kev": 1,
       "ransomware": 0,
       "ratio": 0.0,
-      "recenti": 1
+      "recenti": 0
     },
     {
       "vendor": "Grafana Labs",
       "kev": 2,
       "ransomware": 0,
       "ratio": 0.0,
-      "recenti": 1
+      "recenti": 0
     },
     {
       "vendor": "Mozilla",
       "kev": 13,
       "ransomware": 1,
       "ratio": 0.077,
-      "recenti": 1
+      "recenti": 0
     },
     {
       "vendor": "Jenkins",
@@ -1166,13 +1215,6 @@
       "kev": 1,
       "ransomware": 0,
       "ratio": 0.0,
-      "recenti": 0
-    },
-    {
-      "vendor": "Atlassian",
-      "kev": 13,
-      "ransomware": 8,
-      "ratio": 0.615,
       "recenti": 0
     },
     {
