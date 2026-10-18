@@ -1,0 +1,3 @@
+# Fine riga: nel repository sempre LF, a prescindere dalla config del PC
+# (core.autocrlf). Sul disco ognuno tiene quelle del proprio sistema.
+* text=auto
