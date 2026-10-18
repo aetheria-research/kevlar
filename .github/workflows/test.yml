@@ -1,0 +1,42 @@
+name: Test
+
+# Lancia la suite pytest su ogni pull request e su ogni push su main, cosi' una
+# regressione si vede PRIMA del merge (e quindi prima che arrivi alla dashboard).
+# Evento pull_request (non pull_request_target): anche da un fork gira con token
+# in sola lettura e senza segreti. Nessun filtro sui path: il check "test" e'
+# obbligatorio su main, quindi deve comparire su ogni PR, anche solo di README.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Permessi minimi: solo lettura del repo.
+permissions:
+  contents: read
+
+# Un nuovo push sulla stessa PR annulla il run precedente, ormai superato.
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false   # il token non serve dopo il checkout
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      # kevlar.py usa solo la libreria standard: pytest e' l'unica dipendenza,
+      # bloccata al major per non rompersi a sorpresa.
+      - name: Installa pytest
+        run: python -m pip install --disable-pip-version-check "pytest>=9,<10"
+
+      - name: Test
+        run: python -m pytest tests/ -q
