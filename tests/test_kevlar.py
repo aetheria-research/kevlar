@@ -201,7 +201,7 @@ def test_stesso_tasso_in_tabelle_grafico_e_filtro():
     html = kv.genera_html(agg, oggi=OGGI)
     assert "<td>82%</td>" in html            # tabelle
     assert "NasCo: 82%" in html              # grafico (tooltip)
-    assert '["NasCo", 11, 82]' in html       # dati del filtro "ti riguarda?"
+    assert '["NasCo", 11, 82, ' in html      # dati del filtro "ti riguarda?"
     assert "81%" not in html
     assert "| 82% |" in kv.genera_report(agg, oggi=OGGI)
 
@@ -415,6 +415,15 @@ def test_filtro_web_segnala_campione_piccolo():
     agg = kv.aggrega_vendor(vulns, oggi=OGGI)
     html = kv.genera_html(agg, oggi=OGGI)
     assert "campione piccolo" in html
+
+
+def test_filtro_web_mostra_prodotto_dominante():
+    # Come --stack: "JetBrains 100%" deve leggersi "tutte su TeamCity" anche
+    # nel filtro della pagina, non solo da terminale.
+    vulns = [_kev("JetBrains", product="TeamCity", ransomware=True) for _ in range(4)]
+    html = kv.genera_html(kv.aggrega_vendor(vulns, oggi=OGGI), oggi=OGGI)
+    assert '["JetBrains", 4, 100, "tutte su TeamCity"]' in html   # dati del filtro
+    assert "(x[3]?" in html                                        # mostrato nel risultato
 
 
 def test_leggi_stack_da_lista_e_da_file(tmp_path):

@@ -420,7 +420,8 @@ _JS_FILTRO_BODY = (
     "var p=document.createElement('p');p.textContent='Dei '+ts.length+' inseriti: '+tr.length"
     "+' nel catalogo CISA KEV'+(tr.length?' (tasso ransomware medio '+avg+'%)':'')+'.';o.appendChild(p);"
     "if(tr.length){var u=document.createElement('ul');tr.forEach(function(x){var li=document.createElement('li');"
-    "li.textContent=x[0]+' \\u2014 '+x[1]+' KEV, tasso '+x[2]+'%'+(x[1]<10?' (campione piccolo)':'');"
+    "li.textContent=x[0]+' \\u2014 '+x[1]+' KEV'+(x[3]?' ('+x[3]+')':'')+', tasso '+x[2]+'%'"
+    "+(x[1]<10?' (campione piccolo)':'');"
     "u.appendChild(li);});o.appendChild(u);}"
     "if(ab.length){var q=document.createElement('p');q.textContent='Non nel KEV (nessun red flag): '"
     "+ab.join(', ')+'.';o.appendChild(q);}"
@@ -479,8 +480,9 @@ solo i conteggi, non un tasso: su poche falle una percentuale sarebbe rumore.</p
     # array JS, cosi' il filtro risponde per qualunque vendor l'utente digiti,
     # anche quelli assenti dal KEV. Lo script e' permesso in CSP SOLO col suo
     # hash sha256, calcolato qui sul testo esatto (dati inclusi): se cambia, si
-    # ricalcola da solo. Niente 'unsafe-inline' per gli script.
-    kev_lista = [[vd, d["kev"], _pct(d)]
+    # ricalcola da solo. Niente 'unsafe-inline' per gli script. Il 4o campo e'
+    # il prodotto dominante ("tutte su TeamCity"), lo stesso di --stack.
+    kev_lista = [[vd, d["kev"], _pct(d), _nota_prodotto(d)]
                  for vd, d in sorted(agg.items(), key=lambda kv: -kv[1]["kev"])]
     script = ("(function(){var K=" + _json_per_script(kev_lista)
               + ";" + _JS_FILTRO_BODY + "})();")
