@@ -157,6 +157,18 @@ def test_genera_report_contiene_sezioni_e_disclaimer():
     assert "BigCo" in testo
 
 
+def test_report_markdown_nomi_con_pipe_non_spezzano_la_tabella():
+    import re
+    vulns = [_kev("A|B", ransomware=True) for _ in range(10)]
+    vulns += [_kev("Fine\\", ransomware=True) for _ in range(10)]
+    testo = kv.genera_report(kv.aggrega_vendor(vulns, oggi=OGGI), oggi=OGGI)
+    righe = [r for r in testo.splitlines() if r.startswith("| A") or r.startswith("| Fine")]
+    assert righe and "| A\\|B |" in testo
+    for r in righe:   # separatori veri = colonne + 1, come l'intestazione della tabella
+        n = len(re.findall(r"(?<!\\)\|", r.replace("\\\\", "")))
+        assert n in (4, 6), r
+
+
 def test_genera_html_struttura_e_disclaimer():
     vulns = [_kev("BigCo", ransomware=(i < 5)) for i in range(12)]
     agg = kv.aggrega_vendor(vulns, oggi=OGGI)
