@@ -185,11 +185,18 @@ def _prodotti_vendor(d, top=10):
     return righe[:top], resto
 
 
+def _cella_md(x):
+    """Cella di tabella Markdown da dato esterno: una riga sola, '\\' e '|'
+    escapati, cosi' un nome con '|' (o che finisce in '\\') non spezza la
+    tabella ne' sposta i valori nella colonna sbagliata."""
+    return " ".join(str(x).split()).replace("\\", "\\\\").replace("|", "\\|")
+
+
 def _tabella(righe, intestazione):
     out = ["| " + " | ".join(intestazione) + " |",
            "|" + "|".join([" --- "] * len(intestazione)) + "|"]
     for r in righe:
-        out.append("| " + " | ".join(str(x) for x in r) + " |")
+        out.append("| " + " | ".join(_cella_md(x) for x in r) + " |")
     return "\n".join(out)
 
 
