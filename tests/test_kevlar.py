@@ -370,6 +370,45 @@ def test_dettaglio_prodotti_escape_nomi_prodotto():
     assert "&lt;img src=x onerror=alert(1)&gt;" in html
 
 
+def test_tabelle_ordinabili_tipi_colonna():
+    t = kv._tabella_html([("A", 1, "82%"), ("B", 12, "7%")], ["Vendor", "KEV", "Tasso"])
+    assert '<table class="ord">' in t
+    assert ('<th data-tipo="txt">Vendor</th><th data-tipo="num">KEV</th>'
+            '<th data-tipo="num">Tasso</th>') in t
+    # una cella marcata _Html col solo numero davanti resta numerica
+    t2 = kv._tabella_html([("A", kv._Html('100%<span class="cp">*</span>'))], ["V", "T"])
+    assert '<th data-tipo="num">T</th>' in t2 and '<span class="cp">*</span>' in t2
+
+
+def test_sezione_tutti_i_vendor_completa_e_onesta():
+    vulns = [_kev("BigCo", ransomware=(i < 5)) for i in range(12)]   # 42%, campione ok
+    vulns += [_kev("SmallCo", ransomware=True) for _ in range(4)]     # 100%, campione piccolo
+    vulns += [_kev("MidCo") for _ in range(3)]
+    html = kv.genera_html(kv.aggrega_vendor(vulns, oggi=OGGI), oggi=OGGI)
+    assert 'id="tutti"' in html and 'href="#tutti"' in html
+    tab = html[html.index('id="tv-tab"'):]
+    tab = tab[:tab.index("</table>")]
+    assert tab.count("<tr>") == 1 + 3                                 # intestazione + 3 vendor
+    assert '<td>100%<span class="cp"' in tab                          # SmallCo marcato
+    assert '<td>42%</td>' in tab                                      # BigCo no
+    # ricerca: parte nascosta (la mostra lo script), input limitato
+    assert '<div id="tv-cerca" class="tv-cerca" hidden>' in html
+    assert 'id="tv-in" type="search" maxlength="64"' in html
+
+
+def test_js_delle_tabelle_senza_api_pericolose():
+    # Guardia di sicurezza: nel JS della pagina niente sink HTML, niente codice
+    # dinamico, niente regex costruite dall'input, nessuna richiesta di rete.
+    for corpo in (kv._JS_FILTRO_BODY, kv._JS_TABELLE_BODY):
+        for vietato in ("innerHTML", "outerHTML", "insertAdjacentHTML", "document.write",
+                        "eval(", "new Function", "RegExp(", "setTimeout(", "setInterval(",
+                        "fetch(", "XMLHttpRequest", "location", "cookie", "localStorage"):
+            assert vietato not in corpo, vietato
+    # l'input della ricerca si legge una volta sola, limitato, e non torna nella pagina
+    assert kv._JS_TABELLE_BODY.count("q.value") == 1
+    assert "q.value.slice(0,64)" in kv._JS_TABELLE_BODY
+
+
 def test_genera_html_csp_script_solo_via_hash():
     # Pagina pubblica: CSP restrittiva; lo script del filtro e' permesso SOLO
     # tramite il suo hash sha256, mai con 'unsafe-inline'.

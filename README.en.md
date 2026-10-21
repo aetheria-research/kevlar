@@ -9,7 +9,7 @@
 
 **[🇮🇹 Versione italiana](README.md)**
 
-**🔗 Live dashboard** (self-regenerates weekly from the CISA catalog): **https://aetheria-research.github.io/kevlar/** — with the rate chart and a **"does it affect you?"** filter (paste your vendors, see which are in the KEV).
+**🔗 Live dashboard** (self-regenerates weekly from the CISA catalog): **https://aetheria-research.github.io/kevlar/** — with the rate chart, a **"does it affect you?"** filter (paste your vendors, see which are in the KEV), per-product detail, sortable tables and the full searchable vendor list.
 
 > Not all flaws weigh the same. **KEVlar** measures vendor risk from the public **CISA KEV** catalog, weighting it by the **ransomware weaponization rate** rather than the raw vulnerability count.
 
