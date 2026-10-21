@@ -32,9 +32,14 @@ Licenza: MIT.
 import argparse
 import base64
 import collections
+import csv
 import datetime
 import hashlib
+import io
 import json
+import ssl
+import unicodedata
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -48,14 +53,54 @@ MESI_TREND = 12
 MIN_KEV_RATIO = 10
 # Il catalogo pesa ~2 MB: una risposta molto piu' grande non e' il catalogo atteso.
 MAX_BYTES_CATALOGO = 50 * 1024 * 1024
+# Soglia di plausibilita' del download: il catalogo ha ~1750 voci e cresce (CISA
+# non ne toglie). Molte meno = troncato o manipolato: non diventa la dashboard.
+MIN_KEV_PLAUSIBILI = 1000
+# Unico posto da cui si scarica: HTTPS su cisa.gov, anche dopo un redirect.
+DOMINIO_FONTE = "cisa.gov"
+
+
+def _verifica_url(url):
+    """Ammette solo https:// su cisa.gov o un suo sottodominio. Un redirect verso
+    http:// (dato in chiaro, manomettibile) o verso un altro host viene rifiutato:
+    meglio un workflow fermo, con online la pagina buona, che un dato non fidato."""
+    p = urllib.parse.urlsplit(url)
+    host = (p.hostname or "").lower()
+    if p.scheme != "https" or not (host == DOMINIO_FONTE or host.endswith("." + DOMINIO_FONTE)):
+        raise ValueError(f"connessione rifiutata: {url} non e' https:// su {DOMINIO_FONTE}")
+
+
+class _RedirectSicuro(urllib.request.HTTPRedirectHandler):
+    """Segue i redirect solo se la destinazione passa _verifica_url."""
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        _verifica_url(newurl)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def _contesto_tls():
+    """TLS verificato (certificato + hostname, CA di sistema) e minimo TLS 1.2."""
+    ctx = ssl.create_default_context()
+    ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+    return ctx
+
+
+def _apri(url, timeout):
+    """Connessione in uscita blindata: TLS verificato, redirect controllati,
+    timeout. Unico punto del programma che apre la rete."""
+    _verifica_url(url)
+    opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=_contesto_tls()),
+                                         _RedirectSicuro())
+    req = urllib.request.Request(url, headers={"User-Agent": "KEVlar"})
+    return opener.open(req, timeout=timeout)
 
 
 def scarica_kev(url=CISA_KEV_URL, cache=CACHE_PATH, timeout=30):
     """Scarica il catalogo CISA KEV (dato pubblico) in cache locale e ritorna il path.
     Lo valida PRIMA di sovrascrivere la cache: una risposta anomala (pagina
-    d'errore, file troncato o enorme) solleva ValueError e la cache buona resta."""
-    req = urllib.request.Request(url, headers={"User-Agent": "KEVlar"})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
+    d'errore, file troncato, enorme o implausibilmente piccolo) solleva ValueError
+    e la cache buona resta."""
+    with _apri(url, timeout) as r:
+        _verifica_url(r.geturl())  # anche l'URL finale, dopo eventuali redirect
         dati = r.read(MAX_BYTES_CATALOGO + 1)
     if len(dati) > MAX_BYTES_CATALOGO:
         raise ValueError(f"risposta oltre {MAX_BYTES_CATALOGO} byte: non e' il catalogo atteso")
@@ -66,6 +111,9 @@ def scarica_kev(url=CISA_KEV_URL, cache=CACHE_PATH, timeout=30):
     if not vulns:
         raise ValueError("il download non contiene vulnerabilita' "
                          "(pagina d'errore o formato del catalogo cambiato?)")
+    if len(vulns) < MIN_KEV_PLAUSIBILI:
+        raise ValueError(f"il download ha solo {len(vulns)} vulnerabilita' (attese almeno "
+                         f"{MIN_KEV_PLAUSIBILI}): catalogo troncato o anomalo, non lo uso")
     Path(cache).write_bytes(dati)
     return Path(cache)
 
@@ -75,6 +123,22 @@ def _campo(v, *nomi):
         if v.get(n):
             return v[n]
     return ""
+
+
+# Lunghezza massima di un nome vendor/prodotto: i reali arrivano a ~180 caratteri.
+MAX_LEN_NOME = 200
+
+
+def _testo_pulito(x, maxlen=MAX_LEN_NOME):
+    """Nome da dato esterno reso sicuro e leggibile: spazi compattati, via i
+    caratteri di controllo e di formato Unicode (Cc/Cf: invisibili, inversione
+    del verso del testo stile "Trojan Source"), lunghezza massima. Vuoto -> '?'."""
+    s = " ".join(str(x).split())
+    s = "".join(c for c in s if unicodedata.category(c) not in ("Cc", "Cf"))
+    s = " ".join(s.split())
+    if len(s) > maxlen:
+        s = s[:maxlen - 1].rstrip() + "…"
+    return s or "?"
 
 
 def _estrai_kev(kev):
@@ -90,7 +154,7 @@ def _estrai_kev(kev):
         return [], "?"
     if not isinstance(vulns, list):
         return [], "?"
-    return [v for v in vulns if isinstance(v, dict)], str(ver)
+    return [v for v in vulns if isinstance(v, dict)], _testo_pulito(ver, maxlen=40)
 
 
 def carica_kev(path):
@@ -110,14 +174,14 @@ def aggrega_vendor(vulns, oggi=None, mesi_trend=MESI_TREND):
     soglia_giorni = mesi_trend * 30
     agg = {}
     for v in vulns:
-        vd = _campo(v, "vendorProject", "vendor") or "?"
+        vd = _testo_pulito(_campo(v, "vendorProject", "vendor") or "?")
         d = agg.setdefault(vd, {"kev": 0, "ransomware": 0, "recenti": 0,
                                 "prodotti": collections.Counter(),
                                 "prodotti_ransomware": collections.Counter()})
-        # Nome prodotto come lo scrive CISA, solo con gli spazi ripuliti (ce ne
-        # sono di iniziali/doppi). Nessuna unificazione delle varianti: sarebbe
+        # Nome prodotto come lo scrive CISA, solo ripulito (spazi iniziali/doppi,
+        # caratteri invisibili). Nessuna unificazione delle varianti: sarebbe
         # un'interpretazione, non il dato.
-        prodotto = " ".join(str(_campo(v, "product")).split()) or "?"
+        prodotto = _testo_pulito(_campo(v, "product") or "?")
         d["kev"] += 1
         d["prodotti"][prodotto] += 1
         if str(_campo(v, "knownRansomwareCampaignUse")).lower() == "known":
@@ -514,7 +578,9 @@ solo i conteggi, non un tasso: su poche falle una percentuale sarebbe rumore.</p
 <div class="tlp">TLP:CLEAR</div>
 <h1>KEVlar &mdash; Vendor Risk</h1>
 <p class="sotto">Rischio per vendor pesato sul ransomware, dal catalogo pubblico
-<strong>CISA KEV</strong>. Catalogo {_esc(catalog_version)} &middot; {oggi.strftime('%Y-%m-%d')}.</p>
+<strong>CISA KEV</strong>. Catalogo {_esc(catalog_version)} &middot; {oggi.strftime('%Y-%m-%d')}.
+Dati aperti: <a href="vendor_risk_latest.json" type="application/json">JSON</a> &middot;
+<a href="vendor_risk_latest.csv" type="text/csv">CSV</a>.</p>
 
 <div class="stat">
   <div><b>{totale}</b>vulnerabilita' sfruttate (KEV)</div>
@@ -573,21 +639,60 @@ marchi appartengono ai rispettivi titolari; nessuna affiliazione e' implicata.</
 """
 
 
+# Versione del formato di JSON e CSV pubblici (dati aperti / API). Si alza
+# solo se un campo esistente cambia nome o significato; aggiungerne e' compatibile.
+SCHEMA_VERSION = 1
+CAMPI_VENDOR = ["vendor", "kev", "ransomware", "ratio", "tasso_percento", "recenti",
+                "prodotto_principale", "prodotto_principale_kev"]
+
+
+def _righe_vendor(agg):
+    """Una riga per vendor, in ordine stabile (piu' KEV prima, poi per nome):
+    la stessa per JSON e CSV. tasso_percento e' lo stesso numero della pagina."""
+    righe = []
+    for vd, d in sorted(agg.items(), key=lambda kv: (-kv[1]["kev"], kv[0])):
+        pn, pc = d["prodotti"].most_common(1)[0] if d.get("prodotti") else ("", 0)
+        righe.append({"vendor": vd, "kev": d["kev"], "ransomware": d["ransomware"],
+                      "ratio": d["ratio"], "tasso_percento": _pct(d),
+                      "recenti": d["recenti"], "prodotto_principale": pn,
+                      "prodotto_principale_kev": pc})
+    return righe
+
+
 def snapshot(agg, catalog_version="?", oggi=None) -> dict:
     """Forma serializzabile (JSON) con tutti i vendor e i metadati del catalogo."""
     oggi = oggi or datetime.date.today()
-    vendor = [{"vendor": vd, "kev": d["kev"], "ransomware": d["ransomware"],
-               "ratio": d["ratio"], "recenti": d["recenti"]}
-              for vd, d in agg.items()]
     return {
+        "schema_version": SCHEMA_VERSION,
         "generato": oggi.isoformat(),
+        "fonte": CISA_KEV_URL,
         "catalog_version": catalog_version,
         "totale_kev": sum(d["kev"] for d in agg.values()),
         "tot_ransomware": sum(d["ransomware"] for d in agg.values()),
         "mesi_trend": MESI_TREND,
         "min_kev_ratio": MIN_KEV_RATIO,
-        "vendor": vendor,
+        "vendor": _righe_vendor(agg),
     }
+
+
+def _cella_csv(x):
+    """Neutralizza la formula injection: un testo che inizia con = + - @ (o tab,
+    CR, LF) verrebbe eseguito come formula da Excel/LibreOffice. Prefisso ' (la
+    contromisura OWASP): la cella resta testo. I numeri passano invariati."""
+    if isinstance(x, str) and x[:1] in ("=", "+", "-", "@", "\t", "\r", "\n"):
+        return "'" + x
+    return x
+
+
+def genera_csv(agg) -> str:
+    """CSV (UTF-8, virgola, intestazione) con le stesse righe e colonne del JSON.
+    Le virgolette/virgole nei nomi le gestisce il modulo csv (RFC 4180)."""
+    buf = io.StringIO()
+    w = csv.DictWriter(buf, fieldnames=CAMPI_VENDOR, lineterminator="\n")
+    w.writeheader()
+    for r in _righe_vendor(agg):
+        w.writerow({k: _cella_csv(v) for k, v in r.items()})
+    return buf.getvalue()
 
 
 def valuta_stack(agg, vendors):
@@ -671,6 +776,8 @@ def scrivi_report(path_kev, output_dir=OUTPUT_DIR, oggi=None, html_path=None):
     (output_dir / "vendor_risk_latest.json").write_text(
         json.dumps(snapshot(agg, ver, oggi), ensure_ascii=False, indent=2),
         encoding="utf-8")
+    (output_dir / "vendor_risk_latest.csv").write_text(genera_csv(agg), encoding="utf-8",
+                                                       newline="")
     html_out = Path(html_path) if html_path else (output_dir / "index.html")
     html_out.parent.mkdir(parents=True, exist_ok=True)
     html_out.write_text(genera_html(agg, catalog_version=ver, oggi=oggi), encoding="utf-8")
@@ -714,6 +821,7 @@ def _esegui(args):
     html_out = Path(args.html) if args.html else Path(args.out) / "index.html"
     print(f"  report:   {out}")
     print(f"  snapshot: {Path(args.out) / 'vendor_risk_latest.json'}")
+    print(f"  csv:      {Path(args.out) / 'vendor_risk_latest.csv'}")
     print(f"  html:     {html_out}")
 
 

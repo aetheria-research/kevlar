@@ -1,0 +1,290 @@
+vendor,kev,ransomware,ratio,tasso_percento,recenti,prodotto_principale,prodotto_principale_kev
+Microsoft,390,117,0.3,30,42,Windows,175
+Cisco,101,7,0.069,7,20,IOS and IOS XE Software,14
+Apple,95,0,0.0,0,10,Multiple Products,54
+Adobe,82,11,0.134,13,6,Flash Player,33
+Google,75,0,0.0,0,10,Chromium V8,41
+Oracle,46,13,0.283,28,5,WebLogic Server,12
+Apache,41,8,0.195,20,3,Struts,6
+Ivanti,36,12,0.333,33,6,Endpoint Manager Mobile (EPMM),7
+Fortinet,32,14,0.438,44,12,FortiOS,9
+Linux,31,2,0.065,6,8,Kernel,31
+Citrix,27,7,0.259,26,6,NetScaler,6
+D-Link,26,2,0.077,8,2,Multiple Routers,3
+VMware,26,9,0.346,35,0,vCenter Server,9
+SonicWall,19,13,0.684,68,5,SMA1000 Appliances,5
+Synacor,19,6,0.316,32,5,Zimbra Collaboration Suite (ZCS),17
+Android,17,0,0.0,0,3,Framework,6
+Palo Alto Networks,16,6,0.375,38,3,PAN-OS,13
+Samsung,15,0,0.0,0,2,Mobile Devices,13
+Atlassian,14,8,0.571,57,1,Confluence Data Center and Server,3
+SAP,14,3,0.214,21,0,NetWeaver,10
+Mozilla,13,1,0.077,8,0,Firefox and Thunderbird,6
+Zyxel,13,2,0.154,15,1,Multiple Firewalls,5
+Qualcomm,12,0,0.0,0,1,Multiple Chipsets,11
+Trend Micro,12,0,0.0,0,1,Apex One,2
+QNAP,11,9,0.818,82,0,Photo Station,4
+Roundcube,11,0,0.0,0,2,Webmail,7
+SolarWinds,11,2,0.182,18,4,Web Help Desk,5
+Arm,9,0,0.0,0,0,Mali Graphics Processing Unit (GPU),6
+Progress,9,4,0.444,44,1,WhatsUp Gold,2
+Red Hat,9,4,0.444,44,2,Polkit,2
+Zoho,9,2,0.222,22,0,ManageEngine,6
+F5,8,4,0.5,50,2,BIG-IP,3
+IBM,8,2,0.25,25,1,Data Risk Manager,3
+Juniper,8,0,0.0,0,0,Junos OS,7
+NETGEAR,8,0,0.0,0,0,Multiple Devices,2
+Mitel,7,5,0.714,71,0,MiVoice Connect,3
+Sophos,7,2,0.286,29,0,Firewall,2
+Jenkins,6,1,0.167,17,0,Jenkins,1
+TP-Link,6,0,0.0,0,0,Multiple Routers,2
+WordPress,6,0,0.0,0,3,Core,3
+Broadcom,5,1,0.2,20,4,VMware vCenter,1
+Check Point,5,2,0.4,40,4,Multiple Products,2
+DrayTek,5,0,0.0,0,0,Multiple Vigor Routers,2
+Drupal,5,2,0.4,40,1,Core,3
+Exim,5,1,0.2,20,0,Exim,3
+GNU,5,0,0.0,0,1,Bourne-Again Shell (Bash),2
+GitLab,5,1,0.2,20,3,Community and Enterprise Editions,2
+Langflow,5,1,0.2,20,4,Langflow,5
+MikroTik,5,0,0.0,0,3,RouterOS,5
+N-able,5,0,0.0,0,3,N-central,3
+PaperCut,5,2,0.4,40,3,NG/MF,4
+RARLAB,5,4,0.8,80,1,WinRAR,4
+Accellion,4,4,1.0,100,0,FTA,4
+BeyondTrust,4,1,0.25,25,2,Privileged Remote Access (PRA) and Remote Support (RS),2
+ConnectWise,4,2,0.5,50,2,ScreenConnect,4
+Craft CMS,4,0,0.0,0,1,Craft CMS,4
+Fortra,4,2,0.5,50,0,GoAnywhere MFT,2
+GIGABYTE,4,4,1.0,100,0,Multiple Products,4
+Gladinet,4,0,0.0,0,3,CentreStack and Triofox,2
+JFrog,4,0,0.0,0,4,Artifactory,4
+JetBrains,4,4,1.0,100,2,TeamCity,4
+Kentico,4,0,0.0,0,1,Xperience CMS,2
+Nagios,4,0,0.0,0,0,Nagios XI,4
+Sangoma,4,0,0.0,0,3,FreePBX,3
+SimpleHelp,4,3,0.75,75,3,SimpleHelp,4
+Sitecore,4,1,0.25,25,0,CMS and Experience Platform (XP),2
+Ubiquiti,4,0,0.0,0,3,UniFi OS,3
+Veeam,4,4,1.0,100,0,Backup & Replication,4
+WatchGuard,4,1,0.25,25,2,Firebox,2
+ASUS,3,0,0.0,0,1,Live Update,1
+Arista,3,0,0.0,0,3,VeloCloud Orchestrator,2
+BerriAI,3,0,0.0,0,3,LiteLLM,3
+CrushFTP,3,1,0.333,33,0,CrushFTP,3
+Dassault Systèmes,3,0,0.0,0,2,DELMIA Apriso,3
+DotNetNuke (DNN),3,1,0.333,33,0,DotNetNuke (DNN),3
+Elastic,3,0,0.0,0,0,Elasticsearch,2
+ImageMagick,3,0,0.0,0,0,ImageMagick,3
+Kaseya,3,3,1.0,100,0,Virtual System/Server Administrator (VSA),3
+Laravel,3,1,0.333,33,1,Livewire,1
+Meta Platforms,3,0,0.0,0,0,WhatsApp,3
+OSGeo,3,0,0.0,0,1,GeoServer,2
+PHP,3,1,0.333,33,0,PHPMailer,1
+Qlik,3,3,1.0,100,0,Sense,3
+Rails,3,0,0.0,0,0,Ruby on Rails,3
+Realtek,3,0,0.0,0,0,SDK,1
+SaltStack,3,0,0.0,0,0,Salt,3
+SmarterTools,3,3,1.0,100,3,SmarterMail,3
+SysAid,3,1,0.333,33,0,SysAid On-Prem,2
+TeleMessage,3,0,0.0,0,0,TM SGNL,3
+Tenda,3,0,0.0,0,0,AC11 Router,1
+TrueConf,3,0,0.0,0,3,Server,2
+VMware Tanzu,3,1,0.333,33,0,Spring Cloud,1
+Veritas,3,3,1.0,100,0,Backup Exec Agent,3
+Acronis,2,0,0.0,0,1,Backup,1
+Advantive,2,0,0.0,0,0,VeraCore,2
+Ahsay,2,0,0.0,0,2,AhsayCBS,2
+Array Networks,2,1,0.5,50,1,ArrayOS AG,1
+Aviatrix,2,0,0.0,0,0,Controllers,1
+CWP,2,0,0.0,0,1,Control Web Panel,2
+Cleo,2,2,1.0,100,0,Multiple Products,2
+Commvault,2,0,0.0,0,0,Command Center,1
+CyberPersons,2,2,1.0,100,0,CyberPanel,2
+Dahua,2,0,0.0,0,0,IP Camera Firmware,2
+Dasan,2,1,0.5,50,0,Gigabit Passive Optical Network (GPON) Routers,2
+Dell,2,0,0.0,0,1,RecoverPoint for Virtual Machines (RP4VMs),1
+EyesOfNetwork,2,0,0.0,0,0,EyesOfNetwork,2
+GeoVision,2,0,0.0,0,0,Multiple Devices,2
+Grafana Labs,2,0,0.0,0,0,Grafana,2
+Hewlett Packard (HP),2,0,0.0,0,0,"ProCurve Manager (PCM), PCM+, Identity Driven Manager (IDM), and Application Lifecycle Management",1
+Hikvision,2,0,0.0,0,1,Multiple Products,1
+Hitachi Vantara,2,0,0.0,0,0,Pentaho Business Analytics (BA) Server,2
+IETF,2,0,0.0,0,0,Service Location Protocol (SLP),1
+Intel,2,1,0.5,50,0,Ethernet Diagnostics Driver for Windows,1
+LiteSpeed,2,0,0.0,0,2,cPanel Plugin,2
+Metabase,2,0,0.0,0,1,Metabase,2
+Micro Focus,2,0,0.0,0,0,Micro Focus Access Manager,1
+MinIO,2,0,0.0,0,0,MinIO,2
+MongoDB,2,0,0.0,0,1,MongoDB and MongoDB Server,1
+NUUO,2,0,0.0,0,0,NVRmini2 Devices,1
+OpenPLC,2,0,0.0,0,2,ScadaBR,2
+PEAR,2,0,0.0,0,0,Archive_Tar,2
+PTZOptics,2,0,0.0,0,0,PT30X-SDI/NDI Cameras,2
+Paessler,2,0,0.0,0,0,PRTG Network Monitor,2
+Quest,2,1,0.5,50,1,KACE Systems Management Appliance (SMA),1
+Rejetto,2,1,0.5,50,0,HTTP File Server,1
+Reolink,2,0,0.0,0,0,RLC-410W IP Camera,1
+ServiceNow,2,0,0.0,0,0,"Utah, Vancouver, and Washington DC Now Platform",2
+Sonatype,2,0,0.0,0,0,Nexus Repository Manager,1
+Sudo,2,0,0.0,0,0,Sudo,2
+TIBCO,2,0,0.0,0,0,JasperReports,2
+Telerik,2,1,0.5,50,0,User Interface (UI) for ASP.NET AJAX,2
+ThinkPHP,2,0,0.0,0,0,noneCms,1
+Unraid,2,0,0.0,0,0,Unraid,2
+Versa,2,0,0.0,0,1,Concerto,1
+WSO2,2,1,0.5,50,1,Multiple Products,2
+Wing FTP Server,2,0,0.0,0,1,Wing FTP Server,2
+Zabbix,2,0,0.0,0,0,Frontend,2
+Zammad GmbH,2,0,0.0,0,2,Zammad,2
+ownCloud,2,0,0.0,0,1,ownCloud,1
+vBulletin,2,0,0.0,0,0,vBulletin,2
+7-Zip,1,0,0.0,0,0,7-Zip,1
+AMI,1,0,0.0,0,0,MegaRAC SPx,1
+Acclaim Systems,1,0,0.0,0,0,USAHERDS,1
+Adminer,1,0,0.0,0,0,Adminer,1
+Ajax.NET Professional,1,0,0.0,0,1,Ajax.NET Professional,1
+Alcatel,1,0,0.0,0,0,OmniPCX Enterprise,1
+Amcrest,1,0,0.0,0,0,Cameras and Network Video Recorder (NVR),1
+Aquasecurity,1,0,0.0,0,1,Trivy,1
+Arcadyan,1,0,0.0,0,0,Buffalo Firmware,1
+Arcserve,1,0,0.0,0,0,Unified Data Protection (UDP),1
+Artifex,1,0,0.0,0,0,Ghostscript,1
+Audinate,1,0,0.0,0,0,Dante Discovery,1
+BQE,1,1,1.0,100,0,BillQuick Web Suite,1
+Balbooa,1,0,0.0,0,1,Forms,1
+Barracuda Networks,1,0,0.0,0,0,Email Security Gateway (ESG) Appliance,1
+Cacti,1,0,0.0,0,0,Cacti,1
+ChakraCore,1,0,0.0,0,0,ChakraCore scripting engine,1
+Checkbox,1,0,0.0,0,0,Checkbox Survey,1
+Code Aurora,1,0,0.0,0,0,ACDB Audio Driver,1
+Crestron,1,0,0.0,0,0,Multiple Products,1
+D-Link and TRENDnet,1,0,0.0,0,0,Multiple Devices,1
+DD-WRT,1,0,0.0,0,1,DD-WRT,1
+Daemon,1,0,0.0,0,1,Daemon Tools Lite,1
+Delta Electronics,1,0,0.0,0,0,DOPSoft 2,1
+Digiever,1,0,0.0,0,1,DS-2105 Pro,1
+Docker,1,0,0.0,0,0,Desktop Community Edition,1
+Edimax,1,0,0.0,0,0,IC-7100 IP Camera,1
+Embedthis,1,0,0.0,0,0,GoAhead,1
+Erlang,1,0,0.0,0,0,Erlang/OTP,1
+FXC,1,0,0.0,0,0,"AE1021, AE1021PE",1
+FatPipe,1,0,0.0,0,0,"WARP, IPVPN, and MPVPN software",1
+ForgeRock,1,1,1.0,100,0,Access Management (AM),1
+FreeType,1,0,0.0,0,0,FreeType,1
+Fuel CMS,1,0,0.0,0,0,Fuel CMS,1
+Git,1,0,0.0,0,0,Git,1
+Gitea,1,0,0.0,0,1,Gitea,1
+Gogs,1,0,0.0,0,1,Gogs,1
+Grandstream,1,0,0.0,0,0,UCM6200,1
+Hewlett Packard Enterprise (HPE),1,0,0.0,0,1,OneView,1
+IGEL,1,0,0.0,0,0,IGEL OS,1
+ISC,1,0,0.0,0,1,BIND,1
+Ignite Realtime,1,0,0.0,0,0,Openfire,1
+InduSoft,1,0,0.0,0,0,Web Studio,1
+JQuery,1,0,0.0,0,0,JQuery,1
+JoomShaper,1,0,0.0,0,1,SP Page Builder,1
+Joomla!,1,0,0.0,0,0,Joomla!,1
+Joomlack,1,0,0.0,0,1,Page Builder,1
+Justice AV Solutions,1,0,0.0,0,0,Viewer,1
+KNX Association,1,0,0.0,0,1,KNX Protocol Connection Authorization Option 1,1
+Kestra,1,0,0.0,0,1,Kestra OSS,1
+Kingsoft,1,0,0.0,0,0,WPS Office,1
+Kludex,1,0,0.0,0,1,Starlette,1
+LG,1,0,0.0,0,0,N1A1 NAS,1
+Lantronix,1,0,0.0,0,1,EDS5000,1
+Libraesva,1,0,0.0,0,0,Email Security Gateway,1
+Liferay,1,0,0.0,0,0,Liferay Portal,1
+Looking Glass,1,0,0.0,0,0,Multi-Router Looking Glass (MRLG),1
+MDaemon,1,0,0.0,0,0,Email Server,1
+MLflow,1,0,0.0,0,1,MLflow,1
+Marimo,1,0,0.0,0,1,Marimo,1
+McAfee,1,0,0.0,0,0,McAfee Total Protection (MTP),1
+MediaTek,1,0,0.0,0,0,Multiple Chipsets,1
+Meta,1,1,1.0,100,1,React Server Components,1
+Mirasvit,1,0,0.0,0,1,Mirasvit Full Page Cache Warmer,1
+Motex,1,0,0.0,0,0,LANSCOPE Endpoint Manager,1
+NAKIVO,1,0,0.0,0,0,Backup and Replication,1
+Netis,1,0,0.0,0,0,WF2419 Devices,1
+Netwrix,1,1,1.0,100,0,Auditor,1
+NextGen Healthcare,1,1,1.0,100,0,Mirth Connect,1
+Nice,1,0,0.0,0,0,Linear eMerge E3-Series,1
+North Grid,1,0,0.0,0,0,Proself,1
+Nostromo,1,0,0.0,0,0,nhttpd,1
+Notepad++,1,0,0.0,0,1,Notepad++,1
+Novi Survey,1,0,0.0,0,0,Novi Survey,1
+Npm package,1,0,0.0,0,0,System Information Library for Node.JS,1
+Nx,1,1,1.0,100,1,Nx Console,1
+ONLYOFFICE,1,0,0.0,0,1,Docs,1
+October CMS,1,0,0.0,0,0,October CMS,1
+Omnissa,1,0,0.0,0,1,Workspace One UEM,1
+OpenBSD,1,0,0.0,0,0,OpenSMTPD,1
+OpenSSL,1,0,0.0,0,0,OpenSSL,1
+PHP Group,1,1,1.0,100,0,PHP,1
+PHPUnit,1,0,0.0,0,0,PHPUnit,1
+PTC,1,1,1.0,100,1,Windchill and FlexPLM,1
+Perl,1,0,0.0,0,0,Exiftool,1
+Pi-hole,1,0,0.0,0,0,AdminLTE,1
+PlaySMS,1,0,0.0,0,0,PlaySMS,1
+Plex,1,0,0.0,0,0,Media Server,1
+Prettier,1,0,0.0,0,1,eslint-config-prettier,1
+Primetek,1,0,0.0,0,0,Primefaces Application,1
+ProFTPD,1,0,0.0,0,1,ProFTPD,1
+ProjectSend,1,0,0.0,0,0,ProjectSend,1
+Pulse Secure,1,0,0.0,0,0,Pulse Connect Secure,1
+QNAP Systems,1,0,0.0,0,0,Helpdesk,1
+Qualitia,1,0,0.0,0,0,Active! Mail,1
+Ray-Project,1,0,0.0,0,1,Ray,1
+React Native Community,1,0,0.0,0,1,CLI,1
+Redis,1,0,0.0,0,0,Debian-specific Redis Servers,1
+Rockwell,1,0,0.0,0,1,Multiple Products,1
+Ruckus Wireless,1,0,0.0,0,0,Multiple Products,1
+SIMalliance,1,0,0.0,0,0,Toolbox Browser,1
+SKYSEA,1,0,0.0,0,0,Client View,1
+Samba,1,1,1.0,100,0,Samba,1
+Schneider Electric,1,0,0.0,0,0,U.motion Builder,1
+ScienceLogic,1,0,0.0,0,0,SL1,1
+Siemens,1,0,0.0,0,0,SIMATIC CP,1
+Sierra Wireless,1,0,0.0,0,1,AirLink ALEOS,1
+Smartbedded,1,0,0.0,0,0,Meteobridge,1
+SolarView,1,0,0.0,0,0,Compact,1
+Soliton Systems K.K,1,0,0.0,0,1,FileZen,1
+Splunk,1,0,0.0,0,1,Enterprise,1
+Spreadsheet::ParseExcel,1,0,0.0,0,0,Spreadsheet::ParseExcel,1
+Srimax,1,0,0.0,0,0,Output Messenger,1
+Strapi,1,0,0.0,0,1,Strapi,1
+SugarCRM,1,0,0.0,0,0,Multiple Products,1
+Sumavision,1,0,0.0,0,0,Enhanced Multimedia Router (EMR),1
+Sunhillo,1,0,0.0,0,0,SureLine,1
+Symantec,1,0,0.0,0,0,Symantec Messaging Gateway,1
+TVT,1,0,0.0,0,0,NVMS-1000,1
+TanStack,1,1,1.0,100,1,TanStack,1
+TeamT5,1,0,0.0,0,1,ThreatSonar Anti-Ransomware,1
+TeamViewer,1,0,0.0,0,0,Desktop,1
+Teclib,1,0,0.0,0,0,GLPI,1
+TerraMaster,1,1,1.0,100,0,TerraMaster OS,1
+Treck TCP/IP stack,1,0,0.0,0,0,IPv6,1
+Trihedral,1,0,0.0,0,0,VTScada (formerly VTS),1
+Trimble,1,0,0.0,0,0,Cityworks,1
+Twilio,1,0,0.0,0,0,Authy,1
+Unitronics,1,0,0.0,0,0,Vision PLC and HMI,1
+Vite,1,0,0.0,0,1,Vitejs,1
+Wazuh,1,0,0.0,0,0,Wazuh Server,1
+WebKitGTK,1,0,0.0,0,0,WebKitGTK,1
+WebPros,1,1,1.0,100,1,cPanel & WHM and WP2 (WordPress Squared),1
+WebRTC,1,1,1.0,100,0,WebRTC,1
+Webmin,1,1,1.0,100,0,Webmin,1
+Widget Factory,1,0,0.0,0,1,Joomla Content Editor,1
+XStream,1,0,0.0,0,0,XStream,1
+XWiki,1,0,0.0,0,1,Platform,1
+Yealink,1,0,0.0,0,0,Device Management,1
+Yiiframework,1,0,0.0,0,0,Yii,1
+ZK Framework,1,1,1.0,100,0,AuUploader,1
+ZKTeco,1,0,0.0,0,0,BioTime,1
+dotCMS,1,1,1.0,100,0,dotCMS,1
+iCagenda,1,0,0.0,0,1,iCagenda,1
+n8n,1,0,0.0,0,1,n8n,1
+phpMyAdmin,1,0,0.0,0,0,phpMyAdmin,1
+rConfig,1,0,0.0,0,0,rConfig,1
+reviewdog,1,0,0.0,0,0,action-setup GitHub Action,1
+tj-actions,1,0,0.0,0,0,changed-files GitHub Action,1

@@ -14,11 +14,13 @@ on:
     - cron: "0 6 * * 1"    # ogni lunedi' alle 06:00 UTC (dato CISA fresco)
   workflow_dispatch: {}    # lancio a mano dalla tab Actions
 
-# Permessi minimi: leggere il repo + pubblicare su Pages via OIDC. Niente altro.
+# Permessi minimi: leggere il repo + pubblicare su Pages via OIDC + firmare
+# l'attestazione di provenienza dei file pubblicati. Niente altro.
 permissions:
   contents: read
   pages: write
   id-token: write
+  attestations: write
 
 # Una pubblicazione alla volta; non interrompere un deploy gia' in corso.
 concurrency:
@@ -45,6 +47,14 @@ jobs:
 
       - name: Genera la pagina (scarica il CISA KEV pubblico)
         run: python kevlar.py --out public --html public/index.html
+
+      # Provenienza verificabile: GitHub firma (Sigstore, formato SLSA) l'hash di
+      # ogni file pubblicato legandolo a questo workflow e a questo commit.
+      # Chiunque verifica con: gh attestation verify <file> --repo aetheria-research/kevlar
+      - name: Attestazione di provenienza dei file pubblicati
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: "public/*"
 
       - name: Upload artifact Pages
         uses: actions/upload-pages-artifact@v5

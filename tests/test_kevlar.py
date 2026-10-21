@@ -100,9 +100,10 @@ def test_carica_kev_formati_anomali_non_crashano(tmp_path):
 
 
 class _RispostaFinta:
-    """Sostituto di urlopen: niente rete nei test."""
-    def __init__(self, dati):
+    """Sostituto della connessione (kv._apri): niente rete nei test."""
+    def __init__(self, dati, url=kv.CISA_KEV_URL):
         self.dati = dati
+        self.url = url
 
     def __enter__(self):
         return self
@@ -110,41 +111,138 @@ class _RispostaFinta:
     def __exit__(self, *a):
         return False
 
+    def geturl(self):
+        return self.url
+
     def read(self, n=-1):
         return self.dati if n < 0 else self.dati[:n]
+
+
+def _catalogo_bytes(n=1000):
+    """Catalogo valido e plausibile (>= MIN_KEV_PLAUSIBILI voci), in bytes."""
+    return json.dumps({"catalogVersion": "2026.10",
+                       "vulnerabilities": [_kev("X") for _ in range(n)]}).encode("utf-8")
+
+
+def _rifiuta(fn):
+    try:
+        fn()
+    except ValueError:
+        return True
+    return False
 
 
 def test_scarica_kev_risposta_anomala_non_tocca_la_cache(tmp_path, monkeypatch):
     cache = tmp_path / "cache.json"
     cache.write_text("CACHE BUONA", encoding="utf-8")
-    monkeypatch.setattr(kv.urllib.request, "urlopen",
-                        lambda req, timeout: _RispostaFinta(b"<html>Errore 503</html>"))
-    try:
-        kv.scarica_kev(cache=cache)
-        assert False, "doveva rifiutare la risposta"
-    except ValueError:
-        pass
+    monkeypatch.setattr(kv, "_apri",
+                        lambda url, timeout: _RispostaFinta(b"<html>Errore 503</html>"))
+    assert _rifiuta(lambda: kv.scarica_kev(cache=cache))
     assert cache.read_text(encoding="utf-8") == "CACHE BUONA"
 
 
 def test_scarica_kev_risposta_troppo_grande(tmp_path, monkeypatch):
     monkeypatch.setattr(kv, "MAX_BYTES_CATALOGO", 10)
-    monkeypatch.setattr(kv.urllib.request, "urlopen",
-                        lambda req, timeout: _RispostaFinta(b"x" * 100))
-    try:
-        kv.scarica_kev(cache=tmp_path / "cache.json")
-        assert False, "doveva rifiutare la risposta"
-    except ValueError:
-        pass
+    monkeypatch.setattr(kv, "_apri", lambda url, timeout: _RispostaFinta(b"x" * 100))
+    assert _rifiuta(lambda: kv.scarica_kev(cache=tmp_path / "cache.json"))
     assert not (tmp_path / "cache.json").exists()
 
 
 def test_scarica_kev_risposta_valida_scrive_la_cache(tmp_path, monkeypatch):
-    buono = json.dumps({"catalogVersion": "2026.10", "vulnerabilities": [_kev("X")]})
-    monkeypatch.setattr(kv.urllib.request, "urlopen",
-                        lambda req, timeout: _RispostaFinta(buono.encode("utf-8")))
+    monkeypatch.setattr(kv, "_apri", lambda url, timeout: _RispostaFinta(_catalogo_bytes()))
     cache = kv.scarica_kev(cache=tmp_path / "cache.json")
     assert kv.carica_kev(cache)[1] == "2026.10"
+
+
+def test_scarica_kev_rifiuta_catalogo_implausibile(tmp_path, monkeypatch):
+    # JSON valido ma con 5 voci: troncato o manipolato -> non diventa la dashboard
+    monkeypatch.setattr(kv, "_apri", lambda url, timeout: _RispostaFinta(_catalogo_bytes(5)))
+    assert _rifiuta(lambda: kv.scarica_kev(cache=tmp_path / "cache.json"))
+    assert not (tmp_path / "cache.json").exists()
+
+
+def test_scarica_kev_rifiuta_url_finale_fuori_da_cisa(tmp_path, monkeypatch):
+    # dati perfetti, ma arrivati (dopo un redirect) da un host diverso da cisa.gov
+    monkeypatch.setattr(kv, "_apri", lambda url, timeout: _RispostaFinta(
+        _catalogo_bytes(), url="https://cisa.gov.evil.example/kev.json"))
+    assert _rifiuta(lambda: kv.scarica_kev(cache=tmp_path / "cache.json"))
+    assert not (tmp_path / "cache.json").exists()
+
+
+def test_verifica_url_solo_https_su_cisa():
+    kv._verifica_url(kv.CISA_KEV_URL)                              # la fonte vera
+    kv._verifica_url("https://cisa.gov/feed.json")
+    for cattivo in ["http://www.cisa.gov/feed.json",              # in chiaro
+                    "https://evil.example/feed.json",              # altro host
+                    "https://cisa.gov.evil.example/feed.json",     # suffisso finto
+                    "https://evilcisa.gov/feed.json",              # dominio simile
+                    "https://user@evil.example/www.cisa.gov",      # host nascosto
+                    "ftp://www.cisa.gov/feed.json",
+                    "file:///etc/passwd"]:
+        assert _rifiuta(lambda: kv._verifica_url(cattivo)), cattivo
+
+
+def test_redirect_verso_http_rifiutato():
+    import urllib.request
+    req = urllib.request.Request(kv.CISA_KEV_URL)
+    gestore = kv._RedirectSicuro()
+    assert _rifiuta(lambda: gestore.redirect_request(
+        req, None, 302, "Found", {}, "http://www.cisa.gov/feed.json"))
+    # un redirect lecito (https, stesso dominio) passa
+    assert gestore.redirect_request(req, None, 302, "Found", {},
+                                    "https://www.cisa.gov/altro.json") is not None
+
+
+def test_apri_rifiuta_url_prima_di_toccare_la_rete():
+    assert _rifiuta(lambda: kv._apri("http://www.cisa.gov/feed.json", timeout=1))
+
+
+def test_contesto_tls_verificato_e_moderno():
+    import ssl
+    ctx = kv._contesto_tls()
+    assert ctx.verify_mode == ssl.CERT_REQUIRED and ctx.check_hostname
+    assert ctx.minimum_version >= ssl.TLSVersion.TLSv1_2
+
+
+def test_testo_pulito_toglie_invisibili_e_limita_lunghezza():
+    assert kv._testo_pulito("  Fort‮inet​  Inc \x00") == "Fortinet Inc"
+    assert kv._testo_pulito("A\nB\tC") == "A B C"
+    lungo = kv._testo_pulito("x" * 500)
+    assert len(lungo) == kv.MAX_LEN_NOME and lungo.endswith("…")
+    assert kv._testo_pulito("​\x00 ") == "?"
+    vulns = [_kev("Evil‮Co", product="Pro\x07dotto")]
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    assert list(agg) == ["EvilCo"] and list(agg["EvilCo"]["prodotti"]) == ["Prodotto"]
+
+
+def test_snapshot_schema_e_ordine_stabile():
+    vulns = [_kev("Zeta", product="Z1") for _ in range(2)]
+    vulns += [_kev("Alfa", product="A1", ransomware=True) for _ in range(2)]
+    vulns += [_kev("Beta", product="B1") for _ in range(5)]
+    snap = kv.snapshot(kv.aggrega_vendor(vulns, oggi=OGGI), "2026.10", oggi=OGGI)
+    assert snap["schema_version"] == 1 and snap["fonte"] == kv.CISA_KEV_URL
+    assert [v["vendor"] for v in snap["vendor"]] == ["Beta", "Alfa", "Zeta"]
+    alfa = snap["vendor"][1]
+    assert list(alfa) == kv.CAMPI_VENDOR
+    assert alfa["tasso_percento"] == 100 and alfa["prodotto_principale"] == "A1"
+
+
+def test_csv_intestazione_quoting_e_formula_injection():
+    import csv
+    import io
+    nomi = ['=HYPERLINK("http://x","clic")', "+1+2", "-3", "@SUM(A1)",
+            'Virgola, "virgolette"', "Normale"]
+    vulns = [_kev(n, product=n) for n in nomi]
+    righe = list(csv.reader(io.StringIO(kv.genera_csv(kv.aggrega_vendor(vulns, oggi=OGGI)))))
+    assert righe[0] == kv.CAMPI_VENDOR
+    per_nome = {r[0]: r for r in righe[1:]}
+    for pericoloso in nomi[:4]:                 # mai una cella che inizia con = + - @
+        assert ("'" + pericoloso) in per_nome, pericoloso
+        assert per_nome["'" + pericoloso][6] == "'" + pericoloso   # anche il prodotto
+    assert 'Virgola, "virgolette"' in per_nome  # quoting RFC 4180: torna identico
+    assert per_nome["Normale"][1:4] == ["1", "0", "0.0"]           # numeri non toccati
+    for r in righe[1:]:
+        assert not any(c[:1] in "=+-@" for c in r), r
 
 
 def test_genera_report_contiene_sezioni_e_disclaimer():
@@ -313,7 +411,10 @@ def test_script_filtro_resiste_a_nomi_vendor_malevoli():
     h = base64.b64encode(hashlib.sha256(corpo.encode("utf-8")).digest()).decode()
     assert ("sha256-" + h) in html               # la CSP lascia partire lo script
     dati = json.loads(corpo[len("(function(){var K="):corpo.index(";")])
-    assert sorted(d[0] for d in dati) == sorted(nomi)   # i nomi tornano identici
+    # i nomi tornano identici (a parte la pulizia in ingresso dei caratteri invisibili)
+    assert sorted(d[0] for d in dati) == sorted(kv._testo_pulito(n) for n in nomi)
+    # difesa in profondita': anche se U+2028/2029 arrivassero allo script, escapati
+    assert "\\u2028" in kv._json_per_script(["x y"])
 
 
 def test_genera_html_input_indurito():
@@ -345,7 +446,9 @@ def test_scrivi_report_emette_md_json_e_html(tmp_path):
     out = kv.scrivi_report(p, output_dir=tmp_path / "o", oggi=OGGI)
     assert out.exists()                                        # .md
     assert (tmp_path / "o" / "vendor_risk_latest.json").exists()
-    assert (tmp_path / "o" / "index.html").exists()            # NUOVO
+    assert (tmp_path / "o" / "vendor_risk_latest.csv").exists()   # dati aperti
+    html = (tmp_path / "o" / "index.html").read_text(encoding="utf-8")
+    assert 'href="vendor_risk_latest.json"' in html and 'href="vendor_risk_latest.csv"' in html
 
 
 def test_scrivi_report_rifiuta_catalogo_vuoto(tmp_path):
@@ -383,6 +486,9 @@ def test_workflow_pages_igiene_sicurezza():
     usi = re.findall(r"uses:\s*([^@\s]+)@", wf)
     assert usi, "nessuna action trovata"
     assert all(u.startswith("actions/") for u in usi), f"action non ufficiale: {usi}"
+    assert "contents: write" not in wf            # il workflow non scrive sul repo
+    assert "attest-build-provenance" in wf        # provenienza firmata dei file
+    assert "attestations: write" in wf and 'subject-path: "public/*"' in wf
 
 
 def test_valuta_stack_trova_e_separa():

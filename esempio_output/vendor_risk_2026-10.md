@@ -18,12 +18,12 @@ Vendor le cui KEV sfruttate finiscono piu' spesso in campagne ransomware.
 
 | Vendor | KEV | Ransomware | Tasso | Ultimi 12m |
 | --- | --- | --- | --- | --- |
-| Microsoft | 390 | 117 | 30% | 43 |
+| Microsoft | 390 | 117 | 30% | 42 |
 | Fortinet | 32 | 14 | 44% | 12 |
 | Oracle | 46 | 13 | 28% | 5 |
 | SonicWall | 19 | 13 | 68% | 5 |
 | Ivanti | 36 | 12 | 33% | 6 |
-| Adobe | 82 | 11 | 13% | 7 |
+| Adobe | 82 | 11 | 13% | 6 |
 | VMware | 26 | 9 | 35% | 0 |
 | QNAP | 11 | 9 | 82% | 0 |
 | Apache | 41 | 8 | 20% | 3 |
@@ -60,15 +60,15 @@ Chi "scotta" ora.
 
 | Vendor | Ultimi 12m | KEV totali |
 | --- | --- | --- |
-| Microsoft | 43 | 390 |
+| Microsoft | 42 | 390 |
 | Cisco | 20 | 101 |
 | Fortinet | 12 | 32 |
 | Apple | 10 | 95 |
 | Google | 10 | 75 |
 | Linux | 8 | 31 |
-| Adobe | 7 | 82 |
 | Ivanti | 6 | 36 |
 | Citrix | 6 | 27 |
+| Adobe | 6 | 82 |
 | SonicWall | 5 | 19 |
 | Oracle | 5 | 46 |
 | Synacor | 5 | 19 |

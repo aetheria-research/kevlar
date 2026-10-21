@@ -57,7 +57,7 @@ Emerge un cluster preciso: **edge / appliance** (NAS, firewall, VPN, gateway) �
 4. **Anti-rumore** — la classifica per tasso esclude i vendor sotto i 10 KEV (un campione troppo piccolo rende il tasso inaffidabile).
 5. **Trend** — le KEV aggiunte di recente segnalano chi "scotta" ora.
 
-Il risultato è un report Markdown leggibile + uno snapshot JSON per alimentare una dashboard.
+Il risultato è un report Markdown leggibile, una pagina HTML e i dati aperti in JSON e CSV.
 
 ## Uso
 
@@ -70,8 +70,47 @@ python kevlar.py --no-download   # usa la cache locale
 python kevlar.py --stack "Fortinet,QNAP"  # il rischio dei TUOI vendor (sola consultazione)
 ```
 
-Output in `output/`: `vendor_risk_<AAAA-MM>.md`, `vendor_risk_latest.json` e **`index.html`** (la pagina pubblicabile; `--html <path>` per scegliere dove scriverla).
+Output in `output/`: `vendor_risk_<AAAA-MM>.md`, `vendor_risk_latest.json`, `vendor_risk_latest.csv` e **`index.html`** (la pagina pubblicabile; `--html <path>` per scegliere dove scriverla).
 Un esempio reale è in [`esempio_output/`](esempio_output/). La versione online è pubblicata in automatico da GitHub Actions su GitHub Pages — vedi [`.github/workflows/kevlar-live.yml`](.github/workflows/kevlar-live.yml).
+
+## Dati aperti (API)
+
+Gli stessi dati della dashboard, pronti da usare nei tuoi strumenti. File statici, sola lettura, nessuna chiave né registrazione:
+
+| Formato | URL |
+|---|---|
+| JSON | https://aetheria-research.github.io/kevlar/vendor_risk_latest.json |
+| CSV | https://aetheria-research.github.io/kevlar/vendor_risk_latest.csv |
+
+- **Aggiornamento**: ogni lunedì dal catalogo CISA (e a ogni rilascio). La data è nel campo `generato`, la versione del catalogo in `catalog_version`.
+- **Formato stabile**: `schema_version` (oggi `1`) cambia solo se un campo esistente cambia nome o significato; i campi nuovi si aggiungono senza alzarlo.
+- **Uso dal browser**: il JSON è servito con `Access-Control-Allow-Origin: *`, quindi una pagina web può leggerlo con `fetch`.
+
+Campi per vendor (JSON `vendor[]` e colonne del CSV, stesso ordine: più KEV prima):
+
+| Campo | Significato |
+|---|---|
+| `vendor` | nome come lo scrive CISA (ripulito da spazi e caratteri invisibili) |
+| `kev` | vulnerabilità sfruttate (KEV) del vendor |
+| `ransomware` | di queste, quelle che CISA lega a campagne ransomware |
+| `ratio` / `tasso_percento` | `ransomware / kev`, decimale e percentuale intera (lo stesso numero della pagina) |
+| `recenti` | KEV aggiunte negli ultimi `mesi_trend` mesi |
+| `prodotto_principale` / `prodotto_principale_kev` | il prodotto con più KEV e quante |
+
+```bash
+curl -s https://aetheria-research.github.io/kevlar/vendor_risk_latest.json | python -m json.tool | head
+```
+
+### Sicurezza dei dati
+
+- **Provenienza verificabile.** Ogni file pubblicato ha un'attestazione firmata da GitHub (formato SLSA) che lo lega al workflow e al commit di questo repo. Per controllare che un file scaricato non sia stato alterato:
+  ```bash
+  gh attestation verify vendor_risk_latest.json --repo aetheria-research/kevlar
+  ```
+- **Download blindato.** KEVlar scarica solo via `https://` da `cisa.gov` (anche dopo un redirect), con TLS ≥ 1.2 verificato, timeout e tetto di dimensione. Un catalogo vuoto, illeggibile o implausibile (meno di 1.000 voci) non viene pubblicato: online resta la versione precedente.
+- **CSV sicuro da aprire.** Un testo che inizia con `=`, `+`, `-`, `@` (o con tabulazione/a capo) è preceduto da `'`, così Excel/LibreOffice non lo eseguono come formula.
+- **Se integri i dati in una pagina**, tratta `vendor` e `prodotto_principale` come testo non fidato (vengono da una fonte esterna): fai l'escape prima di inserirli nell'HTML.
+- **Nessun tracciamento.** Niente cookie né analytics; la pagina non fa richieste verso altri siti (CSP restrittiva).
 
 ## Test
 
