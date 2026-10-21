@@ -9,7 +9,7 @@
 
 **[🇬🇧 English version](README.en.md)**
 
-**🔗 Dashboard live** (si rigenera da sola ogni settimana dal catalogo CISA): **https://aetheria-research.github.io/kevlar/** — con grafico del tasso e filtro **"ti riguarda?"** (incolli i tuoi vendor e vedi quali sono nel KEV).
+**🔗 Dashboard live** (si rigenera da sola ogni settimana dal catalogo CISA): **https://aetheria-research.github.io/kevlar/** — con grafico del tasso, filtro **"ti riguarda?"** (incolli i tuoi vendor e vedi quali sono nel KEV), dettaglio per prodotto, tabelle ordinabili e l'elenco completo dei vendor con ricerca.
 
 > Non tutte le falle pesano uguale. **KEVlar** misura il rischio vendor dal catalogo pubblico **CISA KEV** pesandolo sul **tasso di weaponizzazione ransomware**, invece che sul conteggio grezzo delle vulnerabilità.
 

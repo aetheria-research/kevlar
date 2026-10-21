@@ -343,12 +343,48 @@ def _esc(s):
             .replace('"', "&quot;").replace("'", "&#39;"))
 
 
-def _tabella_html(righe, intestazione):
-    th = "".join(f"<th>{_esc(h)}</th>" for h in intestazione)
+class _Html(str):
+    """Markup gia' sicuro, generato da noi con soli numeri (mai da dato esterno):
+    _tabella_html lo inserisce cosi' com'e'. Tutto il resto viene escapato."""
+
+
+def _e_numero(x):
+    """Cella numerica (per l'ordinamento): int/float o testo tipo "82%"."""
+    if isinstance(x, _Html):
+        x = x.split("<", 1)[0]
+    return isinstance(x, (int, float)) or (isinstance(x, str) and x.rstrip("%").isdigit())
+
+
+def _tabella_html(righe, intestazione, id_tab=None):
+    """Tabella con dati escapati. class="ord" + data-tipo per colonna: lo script
+    la rende ordinabile cliccando le intestazioni (senza JS resta una tabella
+    normale, completa e leggibile)."""
+    tipi = ["num" if righe and all(_e_numero(r[i]) for r in righe) else "txt"
+            for i in range(len(intestazione))]
+    th = "".join(f'<th data-tipo="{t}">{_esc(h)}</th>' for h, t in zip(intestazione, tipi))
     corpo = "\n".join(
-        "<tr>" + "".join(f"<td>{_esc(x)}</td>" for x in r) + "</tr>" for r in righe)
-    return (f'<div class="tw"><table>\n<thead><tr>{th}</tr></thead>\n'
+        "<tr>" + "".join(f"<td>{x if isinstance(x, _Html) else _esc(x)}</td>" for x in r)
+        + "</tr>" for r in righe)
+    id_attr = f' id="{_esc(id_tab)}"' if id_tab else ""
+    return (f'<div class="tw"><table class="ord"{id_attr}>\n<thead><tr>{th}</tr></thead>\n'
             f'<tbody>\n{corpo}\n</tbody></table></div>')
+
+
+def _tabella_tutti_html(agg):
+    """Tutti i vendor (stesse righe dei dati aperti, piu' KEV prima). Il tasso dei
+    campioni piccoli porta un asterisco: ordinando per tasso i 4/4 = 100% salgono
+    in cima, e devono restare riconoscibili come poco significativi."""
+    righe = []
+    for r in _righe_vendor(agg):
+        tasso = f"{r['tasso_percento']}%"
+        if r["kev"] < MIN_KEV_RATIO:
+            tasso = _Html(f'{tasso}<span class="cp" title="campione piccolo: meno di '
+                          f'{MIN_KEV_RATIO} KEV">*</span>')
+        righe.append((r["vendor"], r["kev"], r["ransomware"], tasso, r["recenti"],
+                      r["prodotto_principale"]))
+    return _tabella_html(righe, ["Vendor", "KEV", "Ransomware", "Tasso",
+                                 f"Ultimi {MESI_TREND}m", "Prodotto principale"],
+                         id_tab="tv-tab")
 
 
 def _grafico_tasso_svg(agg, top=12, min_kev=MIN_KEV_RATIO):
@@ -454,7 +490,8 @@ a { color:var(--accent); }
 .kev-lab { fill:var(--fg); }
 .kev-val { fill:var(--fg); font-weight:600; }
 .kev-bar { fill:var(--accent); }
-#kv-in { width:100%; max-width:420px; padding:8px 10px; border:1px solid var(--bordo);
+[hidden] { display:none !important; }
+#kv-in, #tv-in { width:100%; max-width:420px; padding:8px 10px; border:1px solid var(--bordo);
   border-radius:8px; background:var(--card); color:var(--fg);
   font:15px system-ui,-apple-system,sans-serif; }
 .kv-out { margin:10px 0 2px; font-size:.95rem; }
@@ -467,6 +504,18 @@ details.kp[open] > summary { border-bottom:1px solid var(--bordo); }
 .kp-meta { color:var(--muted); font-size:.92rem; }
 details.kp .tw { padding:4px 8px 8px; }
 details.kp table { border:0; margin:0; }
+.ord-b { font:inherit; font-weight:600; color:inherit; background:none; border:0; padding:0;
+  cursor:pointer; text-align:inherit; }
+.ord-b::after { content:" \\2195"; color:var(--muted); font-weight:400; }
+th[aria-sort="ascending"] .ord-b::after { content:" \\25B2"; color:var(--accent); }
+th[aria-sort="descending"] .ord-b::after { content:" \\25BC"; color:var(--accent); }
+.ord-b:focus-visible, .tv-piu:focus-visible { outline:2px solid var(--accent);
+  outline-offset:2px; border-radius:4px; }
+.cp { color:var(--accent); font-weight:700; }
+.tv-cerca { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:8px 0; }
+.tv-piu { margin:8px 0 0; padding:8px 14px; border:1px solid var(--bordo); border-radius:8px;
+  background:var(--card); color:var(--fg); font:600 14px system-ui,-apple-system,sans-serif;
+  cursor:pointer; }
 """
 
 
@@ -498,6 +547,48 @@ _JS_FILTRO_BODY = (
     "+ab.join(', ')+'.';o.appendChild(q);}"
     "}"
     "b.addEventListener('input',upd);upd();"
+)
+
+# Tabelle ordinabili + ricerca e "mostra tutti" sulla tabella di tutti i vendor.
+# Stesse regole del filtro: nessun innerHTML/eval/RegExp sull'input; si creano
+# solo pulsanti (createElement) e si SPOSTANO righe gia' presenti (appendChild).
+# La ricerca confronta testo con indexOf (niente regex -> niente ReDoS) e non
+# reinserisce mai l'input nella pagina. Senza JS: tabelle intere, nessun pulsante.
+_JS_TABELLE_BODY = (
+    "var VIS=20;"
+    "function chiave(r,c,num){var s=r.cells[c]?r.cells[c].textContent:'';"
+    "if(num){var n=parseFloat(s);return isNaN(n)?-1:n;}return s.toLowerCase();}"
+    "function ordina(t,c,th){var num=th.getAttribute('data-tipo')==='num',"
+    "pr=th.getAttribute('aria-sort'),asc=pr==='descending'?true:(pr==='ascending'?false:!num);"
+    "var hs=t.tHead.rows[0].cells;for(var k=0;k<hs.length;k++)hs[k].setAttribute('aria-sort','none');"
+    "th.setAttribute('aria-sort',asc?'ascending':'descending');"
+    "var tb=t.tBodies[0],ps=[];"
+    "for(var i=0;i<tb.rows.length;i++)ps.push([chiave(tb.rows[i],c,num),i,tb.rows[i]]);"
+    "ps.sort(function(a,b){if(a[0]<b[0])return asc?-1:1;if(a[0]>b[0])return asc?1:-1;return a[1]-b[1];});"
+    "for(var j=0;j<ps.length;j++)tb.appendChild(ps[j][2]);"
+    "if(t.id==='tv-tab')aggiorna();}"
+    "var ts=document.querySelectorAll('table.ord');"
+    "for(var i=0;i<ts.length;i++)(function(t){var hs=t.tHead.rows[0].cells;"
+    "for(var c=0;c<hs.length;c++)(function(th,c){var bt=document.createElement('button');"
+    "bt.type='button';bt.className='ord-b';while(th.firstChild)bt.appendChild(th.firstChild);"
+    "th.appendChild(bt);th.setAttribute('aria-sort','none');"
+    "bt.addEventListener('click',function(){ordina(t,c,th);});})(hs[c],c);})(ts[i]);"
+    "var tt=document.getElementById('tv-tab'),q=document.getElementById('tv-in'),"
+    "n=document.getElementById('tv-n'),bx=document.getElementById('tv-cerca');"
+    "if(!tt||!q||!n||!bx)return;"
+    "var tutto=false,pb=document.createElement('button');pb.type='button';pb.className='tv-piu';"
+    "pb.setAttribute('aria-controls','tv-tab');"
+    "tt.parentNode.parentNode.insertBefore(pb,tt.parentNode.nextSibling);bx.hidden=false;"
+    "function aggiorna(){var s=q.value.slice(0,64).toLowerCase().trim(),rs=tt.tBodies[0].rows,v=0,m=0;"
+    "for(var i=0;i<rs.length;i++){var ok=!s||rs[i].cells[0].textContent.toLowerCase().indexOf(s)>-1"
+    "||rs[i].cells[5].textContent.toLowerCase().indexOf(s)>-1;if(ok)v++;"
+    "var vis=ok&&(!!s||tutto||v<=VIS);rs[i].hidden=!vis;if(vis)m++;}"
+    "n.textContent=(s?v:m)+' di '+rs.length+' vendor';"
+    "pb.hidden=!!s||rs.length<=VIS;pb.textContent=tutto?'Mostra meno':'Mostra tutti i '+rs.length+' vendor';"
+    "pb.setAttribute('aria-expanded',tutto?'true':'false');}"
+    "pb.addEventListener('click',function(){tutto=!tutto;aggiorna();"
+    "if(!tutto)document.getElementById('tutti').scrollIntoView();});"
+    "q.addEventListener('input',aggiorna);aggiorna();"
 )
 
 
@@ -545,7 +636,20 @@ giudizio sul vendor.</p>
 varianti (es. "Confluence Server" e "Confluence Data Center and Server"). Per prodotto
 solo i conteggi, non un tasso: su poche falle una percentuale sarebbe rumore.</p>
 """ if prodotti else ""
-    link_prodotti = '<a href="#prodotti">Su quali prodotti?</a>' if prodotti else ""
+    link_prodotti = '<a href="#prodotti">Su quali prodotti?</a> &middot; ' if prodotti else ""
+    # Tutti i vendor: ricerca e pulsante "mostra tutti" li crea lo script (il box
+    # di ricerca parte hidden): senza JS si vede la tabella intera, mai un
+    # controllo che non funziona.
+    sezione_tutti = f"""
+<h2 id="tutti">5. Tutti i vendor</h2>
+<p class="sotto">Tutti i {len(agg)} vendor del catalogo, i piu' presenti prima. Cerca per nome o
+prodotto; clicca un'intestazione per ordinare. <span class="cp">*</span> = campione piccolo
+(meno di {MIN_KEV_RATIO} KEV): tasso poco significativo.</p>
+<div id="tv-cerca" class="tv-cerca" hidden><input id="tv-in" type="search" maxlength="64"
+ placeholder="Cerca vendor o prodotto" aria-label="Cerca vendor o prodotto" aria-controls="tv-tab"
+ autocomplete="off" spellcheck="false"> <span id="tv-n" class="kp-meta" aria-live="polite"></span></div>
+{_tabella_tutti_html(agg)}
+"""
 
     # Riquadro "Ti riguarda?": tutti i vendor (non solo i top) finiscono in un
     # array JS, cosi' il filtro risponde per qualunque vendor l'utente digiti,
@@ -556,7 +660,8 @@ solo i conteggi, non un tasso: su poche falle una percentuale sarebbe rumore.</p
     kev_lista = [[vd, d["kev"], _pct(d), _nota_prodotto(d)]
                  for vd, d in sorted(agg.items(), key=lambda kv: -kv[1]["kev"])]
     script = ("(function(){var K=" + _json_per_script(kev_lista)
-              + ";" + _JS_FILTRO_BODY + "})();")
+              + ";" + _JS_FILTRO_BODY + "})();"
+              + "(function(){" + _JS_TABELLE_BODY + "})();")
     # L'hash si calcola DOPO, sul testo esatto che finisce nella pagina.
     sha = base64.b64encode(hashlib.sha256(script.encode("utf-8")).digest()).decode()
     csp = ("default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-"
@@ -608,7 +713,7 @@ CISA: e' un buon segno, non una prova di sicurezza.</p>
 
 <h2>1. Weaponizzazione ransomware (segnale principale)</h2>
 <p class="sotto">Vendor le cui KEV sfruttate finiscono piu' spesso in campagne ransomware.
-{link_prodotti}</p>
+{link_prodotti}<a href="#tutti">Tutti i vendor</a></p>
 {t1}
 
 <h2>2. Tasso di weaponizzazione (campione &ge; {MIN_KEV_RATIO} KEV)</h2>
@@ -620,6 +725,7 @@ CISA: e' un buon segno, non una prova di sicurezza.</p>
 <p class="sotto">Chi "scotta" ora.</p>
 {t3}
 {sezione_prodotti}
+{sezione_tutti}
 <footer>
 <p class="note">Dati dal catalogo <strong>pubblico</strong> CISA KEV: una fotografia
 alla data del catalogo. Il tasso di weaponizzazione e' <strong>una lente</strong> per
