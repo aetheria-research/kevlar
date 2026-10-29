@@ -51,10 +51,11 @@ jobs:
       # Provenienza verificabile: GitHub firma (Sigstore, formato SLSA) l'hash di
       # ogni file pubblicato legandolo a questo workflow e a questo commit.
       # Chiunque verifica con: gh attestation verify <file> --repo aetheria-research/kevlar
+      # "**/*.*" = tutti i file a ogni livello (anche en/index.html), niente cartelle.
       - name: Attestazione di provenienza dei file pubblicati
         uses: actions/attest-build-provenance@v4
         with:
-          subject-path: "public/*"
+          subject-path: "public/**/*.*"
 
       - name: Upload artifact Pages
         uses: actions/upload-pages-artifact@v5

@@ -1,0 +1,44 @@
+<!doctype html>
+<!-- Sorgente dell'immagine di anteprima dei link (og-kevlar.png, 1200x630).
+     Rigenerarla: msedge --headless=new --hide-scrollbars --force-device-scale-factor=1
+     --window-size=1200,630 --screenshot=og-kevlar.png og-kevlar.html
+     Nessun numero: l'immagine non deve invecchiare quando il catalogo cambia. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>KEVlar preview card</title>
+<style>
+  html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
+  body { background: #0f1216; color: #e6e9ed; font-family: "Segoe UI", system-ui, sans-serif; }
+  .card { position: relative; box-sizing: border-box; width: 1200px; height: 630px;
+          padding: 72px 80px; border-top: 10px solid #ff6b72; }
+  .tlp { font-size: 22px; font-weight: 700; letter-spacing: .12em; color: #9aa4b0; }
+  h1 { font-size: 104px; line-height: 1; margin: 28px 0 18px; letter-spacing: -.02em; }
+  h1 span { color: #ff6b72; }
+  .claim { font-size: 44px; line-height: 1.2; font-weight: 600; max-width: 700px; margin: 0; }
+  .sub { font-size: 28px; color: #9aa4b0; margin-top: 22px; max-width: 700px; }
+  .bars { position: absolute; right: 80px; top: 170px; width: 300px; }
+  .bar { height: 34px; border-radius: 8px; background: #ff6b72; margin-bottom: 18px; }
+  .bar.q { background: #3a434e; }
+  .foot { position: absolute; left: 80px; bottom: 60px; font-size: 26px; color: #9aa4b0; }
+  .foot b { color: #e6e9ed; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="tlp">TLP:CLEAR &middot; OPEN SOURCE &middot; OPEN DATA</div>
+  <h1>KEV<span>lar</span></h1>
+  <p class="claim">Vendor risk weighted by ransomware weaponization, not by raw count.</p>
+  <p class="sub">From the public CISA KEV catalog. Updated every week.</p>
+  <div class="bars" aria-hidden="true">
+    <div class="bar" style="width: 100%"></div>
+    <div class="bar" style="width: 84%"></div>
+    <div class="bar" style="width: 70%"></div>
+    <div class="bar q" style="width: 46%"></div>
+    <div class="bar q" style="width: 30%"></div>
+    <div class="bar q" style="width: 18%"></div>
+  </div>
+  <div class="foot"><b>aetheria-research.github.io/kevlar</b> &middot; IT / EN</div>
+</div>
+</body>
+</html>

@@ -9,7 +9,7 @@
 
 **[🇬🇧 English version](README.en.md)**
 
-**🔗 Dashboard live** (si rigenera da sola ogni settimana dal catalogo CISA): **https://aetheria-research.github.io/kevlar/** — con grafico del tasso, filtro **"ti riguarda?"** (incolli i tuoi vendor e vedi quali sono nel KEV), dettaglio per prodotto, tabelle ordinabili e l'elenco completo dei vendor con ricerca.
+**🔗 Dashboard live** (si rigenera da sola ogni settimana dal catalogo CISA): **https://aetheria-research.github.io/kevlar/** (anche [in inglese](https://aetheria-research.github.io/kevlar/en/)) — con grafico del tasso, filtro **"ti riguarda?"** (incolli i tuoi vendor e vedi quali sono nel KEV), dettaglio per prodotto, tabelle ordinabili e l'elenco completo dei vendor con ricerca.
 
 > Non tutte le falle pesano uguale. **KEVlar** misura il rischio vendor dal catalogo pubblico **CISA KEV** pesandolo sul **tasso di weaponizzazione ransomware**, invece che sul conteggio grezzo delle vulnerabilità.
 
@@ -70,7 +70,7 @@ python kevlar.py --no-download   # usa la cache locale
 python kevlar.py --stack "Fortinet,QNAP"  # il rischio dei TUOI vendor (sola consultazione)
 ```
 
-Output in `output/`: `vendor_risk_<AAAA-MM>.md`, `vendor_risk_latest.json`, `vendor_risk_latest.csv` e **`index.html`** (la pagina pubblicabile; `--html <path>` per scegliere dove scriverla).
+Output in `output/`: `vendor_risk_<AAAA-MM>.md`, `vendor_risk_latest.json`, `vendor_risk_latest.csv`, **`index.html`** e **`en/index.html`** (la pagina pubblicabile in italiano e in inglese, con l'immagine di anteprima dei link `og-kevlar.png`; `--html <path>` per scegliere dove scriverla).
 Un esempio reale è in [`esempio_output/`](esempio_output/). La versione online è pubblicata in automatico da GitHub Actions su GitHub Pages — vedi [`.github/workflows/kevlar-live.yml`](.github/workflows/kevlar-live.yml).
 
 ## Dati aperti (API)
