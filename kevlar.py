@@ -37,6 +37,7 @@ import datetime
 import hashlib
 import io
 import json
+import shutil
 import ssl
 import unicodedata
 import urllib.parse
@@ -224,16 +225,16 @@ def _pct(d):
     return (200 * d["ransomware"] + d["kev"]) // (2 * d["kev"]) if d["kev"] else 0
 
 
-def _nota_prodotto(d):
+def _nota_prodotto(d, lang="it"):
     """'tutte su X' / "per lo piu' X" se un prodotto domina le KEV del vendor,
     altrimenti ''. Cosi' "JetBrains 100%" si legge "tutte su TeamCity"."""
     if not d.get("prodotti"):
         return ""
     pn, pc = d["prodotti"].most_common(1)[0]
     if pc == d["kev"]:
-        return f"tutte su {pn}"
+        return TESTI[lang]["tutte_su"].format(p=pn)
     if pc >= d["kev"] * 0.6:
-        return f"per lo piu' {pn}"
+        return TESTI[lang]["per_lo_piu"].format(p=pn)
     return ""
 
 
@@ -370,24 +371,24 @@ def _tabella_html(righe, intestazione, id_tab=None):
             f'<tbody>\n{corpo}\n</tbody></table></div>')
 
 
-def _tabella_tutti_html(agg):
+def _tabella_tutti_html(agg, lang="it"):
     """Tutti i vendor (stesse righe dei dati aperti, piu' KEV prima). Il tasso dei
     campioni piccoli porta un asterisco: ordinando per tasso i 4/4 = 100% salgono
     in cima, e devono restare riconoscibili come poco significativi."""
+    T = TESTI[lang]
     righe = []
     for r in _righe_vendor(agg):
         tasso = f"{r['tasso_percento']}%"
         if r["kev"] < MIN_KEV_RATIO:
-            tasso = _Html(f'{tasso}<span class="cp" title="campione piccolo: meno di '
-                          f'{MIN_KEV_RATIO} KEV">*</span>')
+            tasso = _Html(f'{tasso}<span class="cp" title="{_esc(T["cp_titolo"])}">*</span>')
         righe.append((r["vendor"], r["kev"], r["ransomware"], tasso, r["recenti"],
                       r["prodotto_principale"]))
-    return _tabella_html(righe, ["Vendor", "KEV", "Ransomware", "Tasso",
-                                 f"Ultimi {MESI_TREND}m", "Prodotto principale"],
+    return _tabella_html(righe, ["Vendor", "KEV", "Ransomware", T["col_tasso"],
+                                 T["col_recenti"], T["col_prodotto_princ"]],
                          id_tab="tv-tab")
 
 
-def _grafico_tasso_svg(agg, top=12, min_kev=MIN_KEV_RATIO):
+def _grafico_tasso_svg(agg, top=12, min_kev=MIN_KEV_RATIO, lang="it"):
     """Barre orizzontali del TASSO di weaponizzazione per vendor. Serie singola
     -> un solo colore, nessuna legenda, etichette dirette, asse da 0 a 100%
     (onesto). SVG inline, nessun JS: tooltip via <title>, la tabella sotto fa da
@@ -399,7 +400,7 @@ def _grafico_tasso_svg(agg, top=12, min_kev=MIN_KEV_RATIO):
     x_lab, x0, x1, W = 184, 196, 620, 680
     H = top_m + len(righe) * (barH + gap) - gap + bot_m
     p = [f'<svg viewBox="0 0 {W} {H}" width="100%" role="img" '
-         f'aria-label="Tasso di weaponizzazione ransomware per vendor" '
+         f'aria-label="{_esc(TESTI[lang]["grafico_aria"])}" '
          f'class="kev-chart">']
     for tick in (0, 25, 50, 75, 100):  # asse da 0: lunghezza proporzionale al tasso
         gx = x0 + (x1 - x0) * tick / 100
@@ -423,7 +424,7 @@ def _grafico_tasso_svg(agg, top=12, min_kev=MIN_KEV_RATIO):
     return f'<figure class="kev-fig">{"".join(p)}</figure>'
 
 
-def _dettaglio_prodotti_html(agg, top=15, top_prodotti=10):
+def _dettaglio_prodotti_html(agg, top=15, top_prodotti=10, lang="it"):
     """Un <details> per ogni vendor delle classifiche (per ransomware e per
     tasso): dentro, i suoi prodotti con KEV e ransomware. Elemento HTML nativo,
     si apre al clic senza JS -> la CSP resta com'e'. Per prodotto solo conteggi,
@@ -432,16 +433,17 @@ def _dettaglio_prodotti_html(agg, top=15, top_prodotti=10):
     scelti.update(classifica_tasso(agg, top=top))
     ordinati = sorted(scelti.items(), key=lambda kv: (kv[1]["ransomware"], kv[1]["kev"]),
                       reverse=True)
+    T = TESTI[lang]
     blocchi = []
     for vd, d in ordinati:
         righe, resto = _prodotti_vendor(d, top_prodotti)
         if resto:
-            righe = righe + [(f"altri {resto[0]} prodotti", resto[1], resto[2])]
+            righe = righe + [(T["altri_prodotti"].format(n=resto[0]), resto[1], resto[2])]
         meta = [f"{d['kev']} KEV", f"{_pct(d)}% ransomware",
-                _nota_prodotto(d) or f"{len(d.get('prodotti', {}))} prodotti"]
+                _nota_prodotto(d, lang) or T["n_prodotti"].format(n=len(d.get("prodotti", {})))]
         if d["kev"] < MIN_KEV_RATIO:
-            meta.append("campione piccolo")
-        tabella = _tabella_html(righe, ["Prodotto (nome CISA)", "KEV", "Ransomware"])
+            meta.append(T["campione_piccolo"])
+        tabella = _tabella_html(righe, [T["col_prodotto_cisa"], "KEV", "Ransomware"])
         blocchi.append(f'<details class="kp"><summary><strong>{_esc(vd)}</strong> '
                        f'<span class="kp-meta">{" &middot; ".join(_esc(m) for m in meta)}'
                        f'</span></summary>\n{tabella}\n</details>')
@@ -531,19 +533,19 @@ _JS_FILTRO_BODY = (
     "return s.trim().toLowerCase().replace(/[^a-z0-9 ._\\/-]/g,'').slice(0,64);"
     "}).filter(Boolean).slice(0,50);"
     "o.textContent='';"
-    "if(!ts.length){o.textContent='Incolla i tuoi vendor per sapere quali compaiono nel catalogo CISA KEV.';return;}"
+    "if(!ts.length){o.textContent=L.vuoto;return;}"
     "var tr=[],ab=[],rt=0;"
     "ts.forEach(function(t){var h=null;for(var i=0;i<K.length;i++){var dl=K[i][0].toLowerCase();"
     "if(dl.indexOf(t)>-1||t.indexOf(dl)>-1){if(!h||K[i][2]>h[2])h=K[i];}}"
     "if(h){tr.push(h);rt+=h[2];}else{ab.push(t);}});"
     "var avg=tr.length?Math.round(rt/tr.length):0;"
-    "var p=document.createElement('p');p.textContent='Dei '+ts.length+' inseriti: '+tr.length"
-    "+' nel catalogo CISA KEV'+(tr.length?' (tasso ransomware medio '+avg+'%)':'')+'.';o.appendChild(p);"
+    "var p=document.createElement('p');p.textContent=L.dei+ts.length+L.inseriti+tr.length"
+    "+L.nelkev+(tr.length?L.medio+avg+'%)':'')+'.';o.appendChild(p);"
     "if(tr.length){var u=document.createElement('ul');tr.forEach(function(x){var li=document.createElement('li');"
-    "li.textContent=x[0]+' \\u2014 '+x[1]+' KEV'+(x[3]?' ('+x[3]+')':'')+', tasso '+x[2]+'%'"
-    "+(x[1]<10?' (campione piccolo)':'');"
+    "li.textContent=x[0]+' \\u2014 '+x[1]+' KEV'+(x[3]?' ('+x[3]+')':'')+', '+L.tasso+' '+x[2]+'%'"
+    "+(x[1]<10?' ('+L.cp+')':'');"
     "u.appendChild(li);});o.appendChild(u);}"
-    "if(ab.length){var q=document.createElement('p');q.textContent='Non nel KEV (nessun red flag): '"
+    "if(ab.length){var q=document.createElement('p');q.textContent=L.nonkev"
     "+ab.join(', ')+'.';o.appendChild(q);}"
     "}"
     "b.addEventListener('input',upd);upd();"
@@ -583,8 +585,8 @@ _JS_TABELLE_BODY = (
     "for(var i=0;i<rs.length;i++){var ok=!s||rs[i].cells[0].textContent.toLowerCase().indexOf(s)>-1"
     "||rs[i].cells[5].textContent.toLowerCase().indexOf(s)>-1;if(ok)v++;"
     "var vis=ok&&(!!s||tutto||v<=VIS);rs[i].hidden=!vis;if(vis)m++;}"
-    "n.textContent=(s?v:m)+' di '+rs.length+' vendor';"
-    "pb.hidden=!!s||rs.length<=VIS;pb.textContent=tutto?'Mostra meno':'Mostra tutti i '+rs.length+' vendor';"
+    "n.textContent=(s?v:m)+L.di+rs.length+L.vendor;"
+    "pb.hidden=!!s||rs.length<=VIS;pb.textContent=tutto?L.meno:L.tutti+rs.length+L.vendor;"
     "pb.setAttribute('aria-expanded',tutto?'true':'false');}"
     "pb.addEventListener('click',function(){tutto=!tutto;aggiorna();"
     "if(!tutto)document.getElementById('tutti').scrollIntoView();});"
@@ -605,9 +607,201 @@ def _json_per_script(obj):
     return s
 
 
-def genera_html(agg, catalog_version="?", oggi=None, top=15) -> str:
-    """Pagina HTML self-contained (stessi dati di genera_report). Niente build,
-    niente dipendenze: pronta per GitHub Pages."""
+# Indirizzo pubblico della dashboard: serve URL ASSOLUTI per l'anteprima dei link
+# (Open Graph: LinkedIn, Slack, Teams scaricano titolo, descrizione e immagine) e
+# per dichiarare la pagina gemella nell'altra lingua (hreflang).
+SITE_URL = "https://aetheria-research.github.io/kevlar/"
+# Immagine dell'anteprima: statica, 1200x630, SENZA numeri (non invecchia ogni
+# lunedi'). Sta in assets/ nel repo e scrivi_report la copia accanto alla pagina.
+OG_IMAGE = "og-kevlar.png"
+ASSETS_DIR = BASE_DIR / "assets"
+
+# Testi della pagina nelle due lingue. Le chiavi che finiscono nello script vanno
+# in "js" (passano da _json_per_script); il resto e' HTML scritto da noi, con i
+# valori esterni (vendor, versione catalogo) sempre escapizzati a parte.
+TESTI = {
+    "it": {
+        "lang": "it", "locale": "it_IT", "base": "", "url": SITE_URL,
+        "titolo_og": "KEVlar — Rischio vendor pesato sul ransomware",
+        "descrizione": "Rischio per vendor pesato sul ransomware, dal catalogo pubblico "
+                       "CISA KEV. TLP:CLEAR.",
+        "og_alt": "KEVlar: rischio vendor dal catalogo CISA KEV, pesato sul tasso di "
+                  "weaponizzazione ransomware",
+        "altra_lingua": '<a href="en/" hreflang="en" lang="en">English version</a>',
+        "intro": "Rischio per vendor pesato sul ransomware, dal catalogo pubblico "
+                 "<strong>CISA KEV</strong>. Catalogo {ver} &middot; {data}.",
+        "dati_aperti": "Dati aperti",
+        "stat_kev": "vulnerabilita' sfruttate (KEV)",
+        "stat_ransom": "armate dal ransomware ({perc}%)",
+        "stat_vendor": "vendor distinti",
+        "callout": "<strong>Come leggerlo.</strong> Il numero di KEV da solo e' fuorviante: "
+                   "i prodotti ubiqui (Windows, Chrome, Linux) sono in cima perche' piu' usati e "
+                   "scrutinati, non perche' peggiori. Il segnale che orienta una scelta e' il "
+                   "<strong>tasso di weaponizzazione</strong> (quante falle sfruttate finiscono "
+                   "armate) e il <strong>trend recente</strong>. Un tasso alto con campione ampio "
+                   "= tipicamente edge/appliance (VPN, firewall, gateway, NAS): la porta "
+                   "d'ingresso preferita.",
+        "filtro_h2": "Ti riguarda?",
+        "filtro_sotto": "Incolla i tuoi vendor/tecnologie: ti dico quali compaiono nel CISA "
+                        "KEV e il tasso ransomware medio del tuo stack.",
+        "filtro_aria": "I tuoi vendor, separati da virgola",
+        "filtro_nota": "Assenza dal KEV = nessuna vulnerabilita' sfruttata NOTA e tracciata "
+                       "da CISA: e' un buon segno, non una prova di sicurezza.",
+        "s1_h2": "1. Weaponizzazione ransomware (segnale principale)",
+        "s1_sotto": "Vendor le cui KEV sfruttate finiscono piu' spesso in campagne ransomware.",
+        "link_prodotti": "Su quali prodotti?", "link_tutti": "Tutti i vendor",
+        "s2_h2": "2. Tasso di weaponizzazione (campione &ge; {n} KEV)",
+        "s2_sotto": "Il cluster \"pensaci due volte / patcha aggressivo\" &mdash; spesso "
+                    "edge/appliance.",
+        "s3_h2": "3. Trend: KEV aggiunte negli ultimi {m} mesi",
+        "s3_sotto": "Chi \"scotta\" ora.",
+        "s4_h2": "4. Dentro i vendor: quali prodotti",
+        "s4_sotto": "Apri un vendor per vedere su quali prodotti cadono le sue KEV. Un tasso "
+                    "alto concentrato su un solo prodotto e' un \"verifica QUEL prodotto, se lo "
+                    "esponi\", non un giudizio sul vendor.",
+        "s4_nota": "Nomi dei prodotti come li scrive CISA: lo stesso prodotto puo' comparire "
+                   "con varianti (es. \"Confluence Server\" e \"Confluence Data Center and "
+                   "Server\"). Per prodotto solo i conteggi, non un tasso: su poche falle una "
+                   "percentuale sarebbe rumore.",
+        "s5_h2": "5. Tutti i vendor",
+        "s5_sotto": "Tutti i {n} vendor del catalogo, i piu' presenti prima. Cerca per nome o "
+                    "prodotto; clicca un'intestazione per ordinare. <span class=\"cp\">*</span> "
+                    "= campione piccolo (meno di {m} KEV): tasso poco significativo.",
+        "cerca": "Cerca vendor o prodotto",
+        "footer_nota": "Dati dal catalogo <strong>pubblico</strong> CISA KEV: una fotografia "
+                       "alla data del catalogo. Il tasso di weaponizzazione e' <strong>una "
+                       "lente</strong> per prioritizzare patch e perimetro, <strong>non</strong> "
+                       "un giudizio sulla qualita' complessiva di un prodotto o di un'azienda. La "
+                       "classificazione \"ransomware\" e' quella pubblicata da CISA "
+                       "(knownRansomwareCampaignUse), non un'attribuzione dell'autore. I marchi "
+                       "appartengono ai rispettivi titolari; nessuna affiliazione e' implicata.",
+        "footer_gen": "Generato da <strong>KEVlar</strong> su dato pubblico CISA KEV",
+        "autore": "Autore",
+        "col_tasso": "Tasso", "col_recenti": f"Ultimi {MESI_TREND}m",
+        "col_tasso_ransom": "Tasso ransomware", "col_kev_tot": "KEV totali",
+        "col_prodotto_princ": "Prodotto principale", "col_prodotto_cisa": "Prodotto (nome CISA)",
+        "grafico_aria": "Tasso di weaponizzazione ransomware per vendor",
+        "cp_titolo": f"campione piccolo: meno di {MIN_KEV_RATIO} KEV",
+        "campione_piccolo": "campione piccolo",
+        "altri_prodotti": "altri {n} prodotti", "n_prodotti": "{n} prodotti",
+        "tutte_su": "tutte su {p}", "per_lo_piu": "per lo piu' {p}",
+        "js": {"vuoto": "Incolla i tuoi vendor per sapere quali compaiono nel catalogo CISA KEV.",
+               "dei": "Dei ", "inseriti": " inseriti: ", "nelkev": " nel catalogo CISA KEV",
+               "medio": " (tasso ransomware medio ", "tasso": "tasso",
+               "cp": "campione piccolo", "nonkev": "Non nel KEV (nessun red flag): ",
+               "di": " di ", "vendor": " vendor", "meno": "Mostra meno",
+               "tutti": "Mostra tutti i "},
+    },
+    "en": {
+        "lang": "en", "locale": "en_US", "base": "../", "url": SITE_URL + "en/",
+        "titolo_og": "KEVlar — Vendor risk weighted by ransomware",
+        "descrizione": "Vendor risk weighted by ransomware weaponization, from the public "
+                       "CISA KEV catalog. TLP:CLEAR.",
+        "og_alt": "KEVlar: vendor risk from the CISA KEV catalog, weighted by the ransomware "
+                  "weaponization rate",
+        "altra_lingua": '<a href="../" hreflang="it" lang="it">Versione italiana</a>',
+        "intro": "Vendor risk weighted by ransomware, from the public <strong>CISA KEV</strong> "
+                 "catalog. Catalog {ver} &middot; {data}.",
+        "dati_aperti": "Open data",
+        "stat_kev": "exploited vulnerabilities (KEV)",
+        "stat_ransom": "weaponized by ransomware ({perc}%)",
+        "stat_vendor": "distinct vendors",
+        "callout": "<strong>How to read it.</strong> The KEV count alone is misleading: "
+                   "ubiquitous products (Windows, Chrome, Linux) top the list because they are "
+                   "more used and more scrutinized, not because they are worse. The signal that "
+                   "should guide a choice is the <strong>weaponization rate</strong> (how many "
+                   "exploited flaws end up weaponized) and the <strong>recent trend</strong>. A "
+                   "high rate on a large sample = typically edge/appliance (VPN, firewall, "
+                   "gateway, NAS): the preferred way in.",
+        "filtro_h2": "Does it affect you?",
+        "filtro_sotto": "Paste your vendors/technologies: you'll see which ones appear in the "
+                        "CISA KEV and your stack's average ransomware rate.",
+        "filtro_aria": "Your vendors, comma-separated",
+        "filtro_nota": "Not in the KEV = no exploited vulnerability KNOWN and tracked by "
+                       "CISA: a good sign, not proof of security.",
+        "s1_h2": "1. Ransomware weaponization (main signal)",
+        "s1_sotto": "Vendors whose exploited KEVs most often end up in ransomware campaigns.",
+        "link_prodotti": "Which products?", "link_tutti": "All vendors",
+        "s2_h2": "2. Weaponization rate (sample &ge; {n} KEVs)",
+        "s2_sotto": "The \"think twice / patch aggressively\" cluster &mdash; often "
+                    "edge/appliance.",
+        "s3_h2": "3. Trend: KEVs added in the last {m} months",
+        "s3_sotto": "Who is \"hot\" right now.",
+        "s4_h2": "4. Inside the vendors: which products",
+        "s4_sotto": "Open a vendor to see which products its KEVs fall on. A high rate "
+                    "concentrated on one product means \"check THAT product, if you expose "
+                    "it\", not a verdict on the vendor.",
+        "s4_nota": "Product names as CISA writes them: the same product can appear with "
+                   "variants (e.g. \"Confluence Server\" and \"Confluence Data Center and "
+                   "Server\"). Per product only counts, no rate: on a few flaws a percentage "
+                   "would be noise.",
+        "s5_h2": "5. All vendors",
+        "s5_sotto": "All {n} vendors in the catalog, most present first. Search by name or "
+                    "product; click a header to sort. <span class=\"cp\">*</span> = small "
+                    "sample (fewer than {m} KEVs): rate not very meaningful.",
+        "cerca": "Search vendor or product",
+        "footer_nota": "Data from the <strong>public</strong> CISA KEV catalog: a snapshot as "
+                       "of the catalog date. The weaponization rate is <strong>a lens</strong> "
+                       "to prioritize patching and perimeter, <strong>not</strong> a verdict on "
+                       "the overall quality of a product or a company. The \"ransomware\" "
+                       "classification is the one published by CISA "
+                       "(knownRansomwareCampaignUse), not the author's attribution. Trademarks "
+                       "belong to their respective owners; no affiliation is implied.",
+        "footer_gen": "Generated by <strong>KEVlar</strong> from public CISA KEV data",
+        "autore": "Author",
+        "col_tasso": "Rate", "col_recenti": f"Last {MESI_TREND}m",
+        "col_tasso_ransom": "Ransomware rate", "col_kev_tot": "Total KEVs",
+        "col_prodotto_princ": "Main product", "col_prodotto_cisa": "Product (CISA name)",
+        "grafico_aria": "Ransomware weaponization rate by vendor",
+        "cp_titolo": f"small sample: fewer than {MIN_KEV_RATIO} KEVs",
+        "campione_piccolo": "small sample",
+        "altri_prodotti": "{n} other products", "n_prodotti": "{n} products",
+        "tutte_su": "all on {p}", "per_lo_piu": "mostly {p}",
+        "js": {"vuoto": "Paste your vendors to see which ones appear in the CISA KEV catalog.",
+               "dei": "Of the ", "inseriti": " entered: ", "nelkev": " in the CISA KEV catalog",
+               "medio": " (average ransomware rate ", "tasso": "rate",
+               "cp": "small sample", "nonkev": "Not in the KEV (no red flag): ",
+               "di": " of ", "vendor": " vendors", "meno": "Show less",
+               "tutti": "Show all "},
+    },
+}
+
+
+def _meta_anteprima(T):
+    """Tag per l'anteprima del link (Open Graph + Twitter/X) e la pagina gemella
+    nell'altra lingua. Solo testi nostri e URL costanti: nessun dato esterno qui."""
+    img = SITE_URL + OG_IMAGE
+    altra = "en" if T["lang"] == "it" else "it"
+    return "\n".join([
+        f'<link rel="canonical" href="{T["url"]}">',
+        f'<link rel="alternate" hreflang="it" href="{SITE_URL}">',
+        f'<link rel="alternate" hreflang="en" href="{SITE_URL}en/">',
+        f'<link rel="alternate" hreflang="x-default" href="{SITE_URL}en/">',
+        '<meta property="og:type" content="website">',
+        '<meta property="og:site_name" content="KEVlar">',
+        f'<meta property="og:title" content="{_esc(T["titolo_og"])}">',
+        f'<meta property="og:description" content="{_esc(T["descrizione"])}">',
+        f'<meta property="og:url" content="{T["url"]}">',
+        f'<meta property="og:locale" content="{T["locale"]}">',
+        f'<meta property="og:locale:alternate" content="{TESTI[altra]["locale"]}">',
+        f'<meta property="og:image" content="{img}">',
+        '<meta property="og:image:type" content="image/png">',
+        '<meta property="og:image:width" content="1200">',
+        '<meta property="og:image:height" content="630">',
+        f'<meta property="og:image:alt" content="{_esc(T["og_alt"])}">',
+        '<meta name="twitter:card" content="summary_large_image">',
+        f'<meta name="twitter:title" content="{_esc(T["titolo_og"])}">',
+        f'<meta name="twitter:description" content="{_esc(T["descrizione"])}">',
+        f'<meta name="twitter:image" content="{img}">',
+    ])
+
+
+def genera_html(agg, catalog_version="?", oggi=None, top=15, lang="it") -> str:
+    """Pagina HTML self-contained (stessi dati di genera_report), in italiano o in
+    inglese: stessa struttura, cambiano solo i testi. Niente build, niente
+    dipendenze: pronta per GitHub Pages. La versione "en" sta in en/index.html,
+    quindi i suoi link ai dati aperti salgono di un livello (T["base"])."""
+    T = TESTI[lang]
     oggi = oggi or datetime.date.today()
     totale = sum(d["kev"] for d in agg.values())
     tot_ransom = sum(d["ransomware"] for d in agg.values())
@@ -616,126 +810,111 @@ def genera_html(agg, catalog_version="?", oggi=None, top=15) -> str:
     t1 = _tabella_html(
         [(vd, d["kev"], d["ransomware"], f"{_pct(d)}%", d["recenti"])
          for vd, d in classifica_ransomware(agg, top)],
-        ["Vendor", "KEV", "Ransomware", "Tasso", f"Ultimi {MESI_TREND}m"])
+        ["Vendor", "KEV", "Ransomware", T["col_tasso"], T["col_recenti"]])
     t2 = _tabella_html(
         [(vd, d["kev"], f"{_pct(d)}%")
          for vd, d in classifica_tasso(agg, top=top)],
-        ["Vendor", "KEV", "Tasso ransomware"])
+        ["Vendor", "KEV", T["col_tasso_ransom"]])
     t3 = _tabella_html(
         [(vd, d["recenti"], d["kev"]) for vd, d in classifica_recenti(agg, top)],
-        ["Vendor", f"Ultimi {MESI_TREND}m", "KEV totali"])
-    grafico = _grafico_tasso_svg(agg, top)
-    prodotti = _dettaglio_prodotti_html(agg, top)
+        ["Vendor", T["col_recenti"], T["col_kev_tot"]])
+    grafico = _grafico_tasso_svg(agg, top, lang=lang)
+    prodotti = _dettaglio_prodotti_html(agg, top, lang=lang)
     sezione_prodotti = f"""
-<h2 id="prodotti">4. Dentro i vendor: quali prodotti</h2>
-<p class="sotto">Apri un vendor per vedere su quali prodotti cadono le sue KEV. Un tasso alto
-concentrato su un solo prodotto e' un "verifica QUEL prodotto, se lo esponi", non un
-giudizio sul vendor.</p>
+<h2 id="prodotti">{T["s4_h2"]}</h2>
+<p class="sotto">{T["s4_sotto"]}</p>
 {prodotti}
-<p class="note">Nomi dei prodotti come li scrive CISA: lo stesso prodotto puo' comparire con
-varianti (es. "Confluence Server" e "Confluence Data Center and Server"). Per prodotto
-solo i conteggi, non un tasso: su poche falle una percentuale sarebbe rumore.</p>
+<p class="note">{T["s4_nota"]}</p>
 """ if prodotti else ""
-    link_prodotti = '<a href="#prodotti">Su quali prodotti?</a> &middot; ' if prodotti else ""
+    link_prodotti = (f'<a href="#prodotti">{T["link_prodotti"]}</a> &middot; '
+                     if prodotti else "")
     # Tutti i vendor: ricerca e pulsante "mostra tutti" li crea lo script (il box
     # di ricerca parte hidden): senza JS si vede la tabella intera, mai un
     # controllo che non funziona.
     sezione_tutti = f"""
-<h2 id="tutti">5. Tutti i vendor</h2>
-<p class="sotto">Tutti i {len(agg)} vendor del catalogo, i piu' presenti prima. Cerca per nome o
-prodotto; clicca un'intestazione per ordinare. <span class="cp">*</span> = campione piccolo
-(meno di {MIN_KEV_RATIO} KEV): tasso poco significativo.</p>
+<h2 id="tutti">{T["s5_h2"]}</h2>
+<p class="sotto">{T["s5_sotto"].format(n=len(agg), m=MIN_KEV_RATIO)}</p>
 <div id="tv-cerca" class="tv-cerca" hidden><input id="tv-in" type="search" maxlength="64"
- placeholder="Cerca vendor o prodotto" aria-label="Cerca vendor o prodotto" aria-controls="tv-tab"
+ placeholder="{T["cerca"]}" aria-label="{T["cerca"]}" aria-controls="tv-tab"
  autocomplete="off" spellcheck="false"> <span id="tv-n" class="kp-meta" aria-live="polite"></span></div>
-{_tabella_tutti_html(agg)}
+{_tabella_tutti_html(agg, lang)}
 """
 
     # Riquadro "Ti riguarda?": tutti i vendor (non solo i top) finiscono in un
     # array JS, cosi' il filtro risponde per qualunque vendor l'utente digiti,
     # anche quelli assenti dal KEV. Lo script e' permesso in CSP SOLO col suo
-    # hash sha256, calcolato qui sul testo esatto (dati inclusi): se cambia, si
-    # ricalcola da solo. Niente 'unsafe-inline' per gli script. Il 4o campo e'
-    # il prodotto dominante ("tutte su TeamCity"), lo stesso di --stack.
-    kev_lista = [[vd, d["kev"], _pct(d), _nota_prodotto(d)]
+    # hash sha256, calcolato qui sul testo esatto (dati e testi inclusi): se
+    # cambia, si ricalcola da solo. Niente 'unsafe-inline' per gli script. Il 4o
+    # campo e' il prodotto dominante ("tutte su TeamCity"), lo stesso di --stack.
+    kev_lista = [[vd, d["kev"], _pct(d), _nota_prodotto(d, lang)]
                  for vd, d in sorted(agg.items(), key=lambda kv: -kv[1]["kev"])]
-    script = ("(function(){var K=" + _json_per_script(kev_lista)
+    testi_js = _json_per_script(T["js"])
+    script = ("(function(){var K=" + _json_per_script(kev_lista) + ";var L=" + testi_js
               + ";" + _JS_FILTRO_BODY + "})();"
-              + "(function(){" + _JS_TABELLE_BODY + "})();")
+              + "(function(){var L=" + testi_js + ";" + _JS_TABELLE_BODY + "})();")
     # L'hash si calcola DOPO, sul testo esatto che finisce nella pagina.
     sha = base64.b64encode(hashlib.sha256(script.encode("utf-8")).digest()).decode()
     csp = ("default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-"
            + sha + "'; object-src 'none'; base-uri 'none'; form-action 'none'")
+    b = T["base"]
 
     return f"""<!doctype html>
-<html lang="it">
+<html lang="{T["lang"]}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KEVlar - Vendor Risk</title>
-<meta name="description" content="Rischio per vendor pesato sul ransomware, dal catalogo pubblico CISA KEV. TLP:CLEAR.">
+<meta name="description" content="{_esc(T["descrizione"])}">
 <meta http-equiv="Content-Security-Policy" content="{csp}">
 <meta name="referrer" content="no-referrer">
+{_meta_anteprima(T)}
 <style>{_HTML_CSS}</style>
 </head>
 <body>
 <div class="wrap">
-<div class="tlp">TLP:CLEAR</div>
+<div class="tlp">TLP:CLEAR &middot; {T["altra_lingua"]}</div>
 <h1>KEVlar &mdash; Vendor Risk</h1>
-<p class="sotto">Rischio per vendor pesato sul ransomware, dal catalogo pubblico
-<strong>CISA KEV</strong>. Catalogo {_esc(catalog_version)} &middot; {oggi.strftime('%Y-%m-%d')}.
-Dati aperti: <a href="vendor_risk_latest.json" type="application/json">JSON</a> &middot;
-<a href="vendor_risk_latest.csv" type="text/csv">CSV</a>.</p>
+<p class="sotto">{T["intro"].format(ver=_esc(catalog_version), data=oggi.strftime('%Y-%m-%d'))}
+{T["dati_aperti"]}: <a href="{b}vendor_risk_latest.json" type="application/json">JSON</a> &middot;
+<a href="{b}vendor_risk_latest.csv" type="text/csv">CSV</a>.</p>
 
 <div class="stat">
-  <div><b>{totale}</b>vulnerabilita' sfruttate (KEV)</div>
-  <div><b>{tot_ransom}</b>armate dal ransomware ({perc}%)</div>
-  <div><b>{len(agg)}</b>vendor distinti</div>
+  <div><b>{totale}</b>{T["stat_kev"]}</div>
+  <div><b>{tot_ransom}</b>{T["stat_ransom"].format(perc=perc)}</div>
+  <div><b>{len(agg)}</b>{T["stat_vendor"]}</div>
 </div>
 
 <div class="callout">
-<strong>Come leggerlo.</strong> Il numero di KEV da solo e' fuorviante: i prodotti
-ubiqui (Windows, Chrome, Linux) sono in cima perche' piu' usati e scrutinati, non
-perche' peggiori. Il segnale che orienta una scelta e' il <strong>tasso di
-weaponizzazione</strong> (quante falle sfruttate finiscono armate) e il
-<strong>trend recente</strong>. Un tasso alto con campione ampio = tipicamente
-edge/appliance (VPN, firewall, gateway, NAS): la porta d'ingresso preferita.
+{T["callout"]}
 </div>
 
-<h2>Ti riguarda?</h2>
-<p class="sotto">Incolla i tuoi vendor/tecnologie: ti dico quali compaiono nel CISA KEV
-e il tasso ransomware medio del tuo stack.</p>
+<h2>{T["filtro_h2"]}</h2>
+<p class="sotto">{T["filtro_sotto"]}</p>
 <input id="kv-in" type="text" maxlength="2000" placeholder="Fortinet, Microsoft, VMware"
- autocomplete="off" spellcheck="false" aria-label="I tuoi vendor, separati da virgola">
+ autocomplete="off" spellcheck="false" aria-label="{T["filtro_aria"]}">
 <div id="kv-out" class="kv-out"></div>
-<p class="note">Assenza dal KEV = nessuna vulnerabilita' sfruttata NOTA e tracciata da
-CISA: e' un buon segno, non una prova di sicurezza.</p>
+<p class="note">{T["filtro_nota"]}</p>
 
-<h2>1. Weaponizzazione ransomware (segnale principale)</h2>
-<p class="sotto">Vendor le cui KEV sfruttate finiscono piu' spesso in campagne ransomware.
-{link_prodotti}<a href="#tutti">Tutti i vendor</a></p>
+<h2>{T["s1_h2"]}</h2>
+<p class="sotto">{T["s1_sotto"]}
+{link_prodotti}<a href="#tutti">{T["link_tutti"]}</a></p>
 {t1}
 
-<h2>2. Tasso di weaponizzazione (campione &ge; {MIN_KEV_RATIO} KEV)</h2>
-<p class="sotto">Il cluster "pensaci due volte / patcha aggressivo" &mdash; spesso edge/appliance.</p>
+<h2>{T["s2_h2"].format(n=MIN_KEV_RATIO)}</h2>
+<p class="sotto">{T["s2_sotto"]}</p>
 {grafico}
 {t2}
 
-<h2>3. Trend: KEV aggiunte negli ultimi {MESI_TREND} mesi</h2>
-<p class="sotto">Chi "scotta" ora.</p>
+<h2>{T["s3_h2"].format(m=MESI_TREND)}</h2>
+<p class="sotto">{T["s3_sotto"]}</p>
 {t3}
 {sezione_prodotti}
 {sezione_tutti}
 <footer>
-<p class="note">Dati dal catalogo <strong>pubblico</strong> CISA KEV: una fotografia
-alla data del catalogo. Il tasso di weaponizzazione e' <strong>una lente</strong> per
-prioritizzare patch e perimetro, <strong>non</strong> un giudizio sulla qualita'
-complessiva di un prodotto o di un'azienda. La classificazione "ransomware" e' quella
-pubblicata da CISA (knownRansomwareCampaignUse), non un'attribuzione dell'autore. I
-marchi appartengono ai rispettivi titolari; nessuna affiliazione e' implicata.</p>
-<p>Generato da <strong>KEVlar</strong> su dato pubblico CISA KEV &middot;
+<p class="note">{T["footer_nota"]}</p>
+<p>{T["footer_gen"]} &middot;
 <a href="https://github.com/aetheria-research/kevlar">github.com/aetheria-research/kevlar</a>
-&middot; Autore: Manuel Carletti.</p>
+&middot; {T["autore"]}: Manuel Carletti.</p>
 <div class="tlp">TLP:CLEAR</div>
 </footer>
 </div>
@@ -887,6 +1066,14 @@ def scrivi_report(path_kev, output_dir=OUTPUT_DIR, oggi=None, html_path=None):
     html_out = Path(html_path) if html_path else (output_dir / "index.html")
     html_out.parent.mkdir(parents=True, exist_ok=True)
     html_out.write_text(genera_html(agg, catalog_version=ver, oggi=oggi), encoding="utf-8")
+    # Versione inglese accanto: <cartella della pagina>/en/index.html
+    html_en = html_out.parent / "en" / "index.html"
+    html_en.parent.mkdir(parents=True, exist_ok=True)
+    html_en.write_text(genera_html(agg, catalog_version=ver, oggi=oggi, lang="en"),
+                       encoding="utf-8")
+    # Immagine dell'anteprima dei link, statica, copiata dal repo accanto alla pagina
+    if (ASSETS_DIR / OG_IMAGE).is_file():
+        shutil.copyfile(ASSETS_DIR / OG_IMAGE, html_out.parent / OG_IMAGE)
     return out
 
 
@@ -929,6 +1116,7 @@ def _esegui(args):
     print(f"  snapshot: {Path(args.out) / 'vendor_risk_latest.json'}")
     print(f"  csv:      {Path(args.out) / 'vendor_risk_latest.csv'}")
     print(f"  html:     {html_out}")
+    print(f"  html en:  {html_out.parent / 'en' / 'index.html'}")
 
 
 if __name__ == "__main__":

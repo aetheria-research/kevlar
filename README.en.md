@@ -1,6 +1,6 @@
 # KEVlar
 
-[![Live dashboard](https://img.shields.io/badge/dashboard-live-success)](https://aetheria-research.github.io/kevlar/)
+[![Live dashboard](https://img.shields.io/badge/dashboard-live-success)](https://aetheria-research.github.io/kevlar/en/)
 [![Test](https://github.com/aetheria-research/kevlar/actions/workflows/test.yml/badge.svg)](https://github.com/aetheria-research/kevlar/actions/workflows/test.yml)
 ![TLP:CLEAR](https://img.shields.io/badge/TLP-CLEAR-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
@@ -9,7 +9,7 @@
 
 **[🇮🇹 Versione italiana](README.md)**
 
-**🔗 Live dashboard** (self-regenerates weekly from the CISA catalog): **https://aetheria-research.github.io/kevlar/** — with the rate chart, a **"does it affect you?"** filter (paste your vendors, see which are in the KEV), per-product detail, sortable tables and the full searchable vendor list.
+**🔗 Live dashboard** (self-regenerates weekly from the CISA catalog): **https://aetheria-research.github.io/kevlar/en/** (also [in Italian](https://aetheria-research.github.io/kevlar/)) — with the rate chart, a **"does it affect you?"** filter (paste your vendors, see which are in the KEV), per-product detail, sortable tables and the full searchable vendor list.
 
 > Not all flaws weigh the same. **KEVlar** measures vendor risk from the public **CISA KEV** catalog, weighting it by the **ransomware weaponization rate** rather than the raw vulnerability count.
 
@@ -70,7 +70,7 @@ python kevlar.py --no-download   # use the local cache
 python kevlar.py --stack "Fortinet,QNAP"  # risk of YOUR vendors (read-only query)
 ```
 
-Output in `output/`: `vendor_risk_<YYYY-MM>.md`, `vendor_risk_latest.json`, `vendor_risk_latest.csv` and **`index.html`** (the publishable page; use `--html <path>` to choose where it goes).
+Output in `output/`: `vendor_risk_<YYYY-MM>.md`, `vendor_risk_latest.json`, `vendor_risk_latest.csv`, **`index.html`** and **`en/index.html`** (the publishable page in Italian and English, with the link-preview image `og-kevlar.png`; use `--html <path>` to choose where it goes).
 A real example is in [`esempio_output/`](esempio_output/). The online version is published automatically by GitHub Actions to GitHub Pages — see [`.github/workflows/kevlar-live.yml`](.github/workflows/kevlar-live.yml).
 
 ## Open data (API)

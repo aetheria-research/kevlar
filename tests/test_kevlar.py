@@ -490,6 +490,55 @@ def test_scrivi_report_emette_md_json_e_html(tmp_path):
     assert 'href="vendor_risk_latest.json"' in html and 'href="vendor_risk_latest.csv"' in html
 
 
+def test_scrivi_report_scrive_pagina_inglese_e_immagine_anteprima(tmp_path):
+    p = tmp_path / "kev.json"
+    p.write_text(json.dumps([_kev("X", ransomware=True)]), encoding="utf-8")
+    kv.scrivi_report(p, output_dir=tmp_path / "o", oggi=OGGI)
+    en = (tmp_path / "o" / "en" / "index.html").read_text(encoding="utf-8")
+    assert '<html lang="en">' in en
+    assert 'href="../vendor_risk_latest.json"' in en      # i dati aperti stanno un livello sopra
+    png = (tmp_path / "o" / kv.OG_IMAGE).read_bytes()      # copiata da assets/ del repo
+    assert png[:8] == b"\x89PNG\r\n\x1a\n"
+    assert (int.from_bytes(png[16:20], "big"), int.from_bytes(png[20:24], "big")) == (1200, 630)
+
+
+def test_pagina_inglese_tradotta_e_sicura():
+    import re
+    import hashlib
+    import base64
+    vulns = [_kev("BigCo", ransomware=(i < 5)) for i in range(12)]
+    vulns += [_kev("SmallCo", product="TeamCity", ransomware=True) for _ in range(4)]
+    vulns += [_kev('"><img src=x onerror=alert(1)>', ransomware=True) for _ in range(10)]
+    en = kv.genera_html(kv.aggrega_vendor(vulns, oggi=OGGI), oggi=OGGI, lang="en")
+    assert '<html lang="en">' in en
+    for inglese in ("Does it affect you?", "All vendors", "small sample", "Main product",
+                    '"all on TeamCity"', "Show all ", "Inside the vendors"):
+        assert inglese in en, inglese
+    for italiano in ("Ti riguarda", "campione piccolo", "Mostra tutti", "Tutti i vendor",
+                     "Tasso ransomware", "per lo piu'", "tutte su", "Dati aperti"):
+        assert italiano not in en, italiano
+    assert "<img" not in en and "&lt;img src=x" in en       # escaping identico all'italiano
+    assert en.count("<script") == 1
+    corpo = re.search(r"<script>(.*?)</script>", en, re.S).group(1)
+    h = base64.b64encode(hashlib.sha256(corpo.encode("utf-8")).digest()).decode()
+    assert ("sha256-" + h) in en                            # la CSP lascia partire lo script
+
+
+def test_anteprima_link_open_graph_e_lingue_collegate():
+    agg = kv.aggrega_vendor([_kev("X", ransomware=True)], oggi=OGGI)
+    it = kv.genera_html(agg, oggi=OGGI)
+    en = kv.genera_html(agg, oggi=OGGI, lang="en")
+    assert kv.SITE_URL.startswith("https://")
+    for pagina, url in ((it, kv.SITE_URL), (en, kv.SITE_URL + "en/")):
+        assert f'<meta property="og:url" content="{url}">' in pagina
+        assert f'<link rel="canonical" href="{url}">' in pagina
+        assert f'<meta property="og:image" content="{kv.SITE_URL}og-kevlar.png">' in pagina
+        assert '<meta name="twitter:card" content="summary_large_image">' in pagina
+        assert f'hreflang="it" href="{kv.SITE_URL}"' in pagina
+        assert f'hreflang="en" href="{kv.SITE_URL}en/"' in pagina
+    assert 'href="en/"' in it and 'href="../"' in en          # ognuna linka l'altra
+
+
 def test_scrivi_report_rifiuta_catalogo_vuoto(tmp_path):
     # Una pagina d'errore al posto del catalogo NON deve diventare una
     # dashboard a zero pubblicata al posto di quella buona.
@@ -527,7 +576,8 @@ def test_workflow_pages_igiene_sicurezza():
     assert all(u.startswith("actions/") for u in usi), f"action non ufficiale: {usi}"
     assert "contents: write" not in wf            # il workflow non scrive sul repo
     assert "attest-build-provenance" in wf        # provenienza firmata dei file
-    assert "attestations: write" in wf and 'subject-path: "public/*"' in wf
+    # tutti i file pubblicati, anche quelli in sottocartelle (en/index.html)
+    assert "attestations: write" in wf and 'subject-path: "public/**/*.*"' in wf
 
 
 def test_valuta_stack_trova_e_separa():
