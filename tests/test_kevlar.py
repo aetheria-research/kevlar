@@ -524,6 +524,27 @@ def test_pagina_inglese_tradotta_e_sicura():
     assert ("sha256-" + h) in en                            # la CSP lascia partire lo script
 
 
+def test_stack_pmi_esempio_onesto_e_calcolato_dai_dati():
+    vulns = [_kev("QNAP", ransomware=(i < 9)) for i in range(11)]          # 82%, campione ok
+    vulns += [_kev("Fortinet", ransomware=(i < 5)) for i in range(12)]     # 42%, campione ok
+    vulns += [_kev("Veeam", ransomware=True) for _ in range(4)]            # 100%, piccolo
+    vulns += [_kev("Googleplex") for _ in range(3)]                        # NON e' "Google"
+    agg = kv.aggrega_vendor(vulns, oggi=OGGI)
+    it = kv.genera_html(agg, oggi=OGGI)
+    assert 'id="pmi"' in it and "Esempio: lo stack di una PMI italiana" in it
+    assert "Synology: non nel KEV" in it and "Google: non nel KEV" in it  # match esatto
+    assert "<strong>Veeam</strong> 4 KEV &middot; 100%<span class=\"cp\"" in it
+    # in evidenza solo i campioni sufficienti, dal tasso piu' alto
+    assert "QNAP (NAS) 82%, Fortinet (Firewall / VPN) 42%." in it
+    assert "Veeam (Backup)" not in it
+    assert "non una statistica" in it                                     # esempio dichiarato
+    sezione = it[it.index('id="pmi"'):]
+    assert sezione[:sezione.index("</table>")].count('<table class="ord"') == 0  # non ordinabile
+    en = kv.genera_html(agg, oggi=OGGI, lang="en")
+    assert "Example: a typical Italian SME stack" in en and "Synology: not in the KEV" in en
+    assert "QNAP (NAS) 82%" in en and "Business software (ERP)" in en
+
+
 def test_anteprima_link_open_graph_e_lingue_collegate():
     agg = kv.aggrega_vendor([_kev("X", ransomware=True)], oggi=OGGI)
     it = kv.genera_html(agg, oggi=OGGI)
