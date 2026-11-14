@@ -356,10 +356,10 @@ def _e_numero(x):
     return isinstance(x, (int, float)) or (isinstance(x, str) and x.rstrip("%").isdigit())
 
 
-def _tabella_html(righe, intestazione, id_tab=None):
+def _tabella_html(righe, intestazione, id_tab=None, ordinabile=True):
     """Tabella con dati escapati. class="ord" + data-tipo per colonna: lo script
     la rende ordinabile cliccando le intestazioni (senza JS resta una tabella
-    normale, completa e leggibile)."""
+    normale, completa e leggibile). ordinabile=False: tabella semplice."""
     tipi = ["num" if righe and all(_e_numero(r[i]) for r in righe) else "txt"
             for i in range(len(intestazione))]
     th = "".join(f'<th data-tipo="{t}">{_esc(h)}</th>' for h, t in zip(intestazione, tipi))
@@ -367,8 +367,57 @@ def _tabella_html(righe, intestazione, id_tab=None):
         "<tr>" + "".join(f"<td>{x if isinstance(x, _Html) else _esc(x)}</td>" for x in r)
         + "</tr>" for r in righe)
     id_attr = f' id="{_esc(id_tab)}"' if id_tab else ""
-    return (f'<div class="tw"><table class="ord"{id_attr}>\n<thead><tr>{th}</tr></thead>\n'
+    classe = ' class="ord"' if ordinabile else ""
+    return (f'<div class="tw"><table{classe}{id_attr}>\n<thead><tr>{th}</tr></thead>\n'
             f'<tbody>\n{corpo}\n</tbody></table></div>')
+
+
+# Esempio di stack di una PMI italiana: per ogni ruolo, i vendor piu' diffusi
+# (nomi come li scrive CISA). E' un ESEMPIO dichiarato, non una statistica: non
+# esiste una fonte pubblica sullo "stack medio". I nomi mostrati sono questi,
+# scritti da noi; i numeri arrivano dal catalogo a ogni rigenerazione.
+STACK_PMI = [
+    ("Posta, Office, Windows", "Email, Office, Windows", ["Microsoft"]),
+    ("Firewall / VPN", "Firewall / VPN", ["SonicWall", "Fortinet", "Zyxel", "WatchGuard"]),
+    ("NAS", "NAS", ["QNAP", "Synology"]),
+    ("Backup", "Backup", ["Veeam"]),
+    ("Virtualizzazione", "Virtualization", ["VMware"]),
+    ("PDF e browser", "PDF and browser", ["Adobe", "Google"]),
+    ("Router / Wi-Fi", "Router / Wi-Fi", ["D-Link", "TP-Link"]),
+    ("Accesso remoto", "Remote access", ["TeamViewer", "AnyDesk"]),
+    ("Gestionale", "Business software (ERP)", ["Zucchetti", "TeamSystem"]),
+]
+
+
+def _stack_pmi_html(agg, lang="it"):
+    """Sezione "Esempio: lo stack di una PMI italiana": una riga per ruolo, i suoi
+    vendor ordinati per tasso (chi non e' nel KEV in fondo, detto chiaramente),
+    asterisco sui campioni piccoli. Corrispondenza ESATTA sul nome del vendor
+    (niente sottostringhe: "Google" non deve agganciare altri nomi). In testa, i
+    tassi piu' alti tra i vendor con campione sufficiente, ricalcolati a ogni
+    rigenerazione. Ritorna (frase_in_evidenza, tabella)."""
+    T = TESTI[lang]
+    per_nome = {vd.lower(): d for vd, d in agg.items()}
+    righe, candidati = [], []
+    for ruolo_it, ruolo_en, vendors in STACK_PMI:
+        ruolo = ruolo_it if lang == "it" else ruolo_en
+        presenti = [(v, per_nome[v.lower()]) for v in vendors if v.lower() in per_nome]
+        assenti = [v for v in vendors if v.lower() not in per_nome]
+        presenti.sort(key=lambda x: (-_pct(x[1]), -x[1]["kev"], x[0]))
+        pezzi = []
+        for v, d in presenti:
+            cp = (f'<span class="cp" title="{_esc(T["cp_titolo"])}">*</span>'
+                  if d["kev"] < MIN_KEV_RATIO else "")
+            pezzi.append(f'<strong>{_esc(v)}</strong> {d["kev"]} KEV &middot; {_pct(d)}%{cp}')
+            if d["kev"] >= MIN_KEV_RATIO:
+                candidati.append((_pct(d), d["kev"], v, ruolo))
+        pezzi += [f'{_esc(v)}: {T["non_nel_kev"]}' for v in assenti]
+        righe.append((ruolo, _Html(" &nbsp;|&nbsp; ".join(pezzi))))
+    candidati.sort(key=lambda c: (-c[0], -c[1], c[2]))
+    top = ", ".join(f"{_esc(v)} ({_esc(r)}) {p}%" for p, _k, v, r in candidati[:3])
+    frase = T["pmi_top"].format(top=top) if top else ""
+    return frase, _tabella_html(righe, [T["col_ruolo"], T["col_vendor_tasso"]],
+                                id_tab="pmi-tab", ordinabile=False)
 
 
 def _tabella_tutti_html(agg, lang="it"):
@@ -514,6 +563,8 @@ th[aria-sort="descending"] .ord-b::after { content:" \\25BC"; color:var(--accent
 .ord-b:focus-visible, .tv-piu:focus-visible { outline:2px solid var(--accent);
   outline-offset:2px; border-radius:4px; }
 .cp { color:var(--accent); font-weight:700; }
+#pmi-tab td, #pmi-tab th { text-align:left; white-space:normal; }
+#pmi-tab td:first-child { white-space:nowrap; font-weight:600; }
 .tv-cerca { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:8px 0; }
 .tv-piu { margin:8px 0 0; padding:8px 14px; border:1px solid var(--bordo); border-radius:8px;
   background:var(--card); color:var(--fg); font:600 14px system-ui,-apple-system,sans-serif;
@@ -685,6 +736,19 @@ TESTI = {
         "campione_piccolo": "campione piccolo",
         "altri_prodotti": "altri {n} prodotti", "n_prodotti": "{n} prodotti",
         "tutte_su": "tutte su {p}", "per_lo_piu": "per lo piu' {p}",
+        "pmi_h2": "Esempio: lo stack di una PMI italiana",
+        "pmi_sotto": "Per ogni ruolo tipico di una piccola o media impresa, i vendor piu' "
+                     "diffusi: quante falle sfruttate hanno (KEV) e quante finiscono in campagne "
+                     "ransomware (tasso).",
+        "pmi_top": "Oggi i tassi piu' alti, su campioni di almeno {n} KEV: {{top}}.".format(
+            n=MIN_KEV_RATIO),
+        "pmi_nota": "E' un esempio, non una statistica: non esiste una fonte pubblica sullo "
+                    "stack medio delle PMI italiane. \"Non nel KEV\" = nessuna falla sfruttata "
+                    "NOTA e tracciata da CISA: un buon segno, non una prova di sicurezza. "
+                    "<span class=\"cp\">*</span> = campione piccolo (meno di {m} KEV). Per il "
+                    "tuo stack reale usa \"Ti riguarda?\" qui sopra.".format(m=MIN_KEV_RATIO),
+        "col_ruolo": "Ruolo", "col_vendor_tasso": "Vendor: KEV · tasso ransomware",
+        "non_nel_kev": "non nel KEV",
         "js": {"vuoto": "Incolla i tuoi vendor per sapere quali compaiono nel catalogo CISA KEV.",
                "dei": "Dei ", "inseriti": " inseriti: ", "nelkev": " nel catalogo CISA KEV",
                "medio": " (tasso ransomware medio ", "tasso": "tasso",
@@ -757,6 +821,20 @@ TESTI = {
         "campione_piccolo": "small sample",
         "altri_prodotti": "{n} other products", "n_prodotti": "{n} products",
         "tutte_su": "all on {p}", "per_lo_piu": "mostly {p}",
+        "pmi_h2": "Example: a typical Italian SME stack",
+        "pmi_sotto": "For each typical role in a small or mid-sized business, the most common "
+                     "vendors: how many exploited flaws they have (KEV) and how many end up in "
+                     "ransomware campaigns (rate).",
+        "pmi_top": "Highest rates today, on samples of at least {n} KEVs: {{top}}.".format(
+            n=MIN_KEV_RATIO),
+        "pmi_nota": "This is an example, not a statistic: there is no public source on the "
+                    "average stack of Italian SMEs. \"Not in the KEV\" = no exploited "
+                    "vulnerability KNOWN and tracked by CISA: a good sign, not proof of "
+                    "security. <span class=\"cp\">*</span> = small sample (fewer than {m} "
+                    "KEVs). For your real stack use \"Does it affect you?\" above.".format(
+                        m=MIN_KEV_RATIO),
+        "col_ruolo": "Role", "col_vendor_tasso": "Vendor: KEVs · ransomware rate",
+        "non_nel_kev": "not in the KEV",
         "js": {"vuoto": "Paste your vendors to see which ones appear in the CISA KEV catalog.",
                "dei": "Of the ", "inseriti": " entered: ", "nelkev": " in the CISA KEV catalog",
                "medio": " (average ransomware rate ", "tasso": "rate",
@@ -820,6 +898,7 @@ def genera_html(agg, catalog_version="?", oggi=None, top=15, lang="it") -> str:
         ["Vendor", T["col_recenti"], T["col_kev_tot"]])
     grafico = _grafico_tasso_svg(agg, top, lang=lang)
     prodotti = _dettaglio_prodotti_html(agg, top, lang=lang)
+    pmi_frase, pmi_tabella = _stack_pmi_html(agg, lang)
     sezione_prodotti = f"""
 <h2 id="prodotti">{T["s4_h2"]}</h2>
 <p class="sotto">{T["s4_sotto"]}</p>
@@ -894,6 +973,12 @@ def genera_html(agg, catalog_version="?", oggi=None, top=15, lang="it") -> str:
  autocomplete="off" spellcheck="false" aria-label="{T["filtro_aria"]}">
 <div id="kv-out" class="kv-out"></div>
 <p class="note">{T["filtro_nota"]}</p>
+
+<h2 id="pmi">{T["pmi_h2"]}</h2>
+<p class="sotto">{T["pmi_sotto"]}</p>
+{f'<p class="callout">{pmi_frase}</p>' if pmi_frase else ''}
+{pmi_tabella}
+<p class="note">{T["pmi_nota"]}</p>
 
 <h2>{T["s1_h2"]}</h2>
 <p class="sotto">{T["s1_sotto"]}
